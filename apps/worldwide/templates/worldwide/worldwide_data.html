@@ -14,7 +14,7 @@
   
   <main>
     <!-- 왼쪽 국가 리스트 -->
-    <section>
+    <section class="left-content">
       <!-- 데이터 업데이트날짜 -->
       <article class="update-day">
         <p>최신 업데이트 날짜</p>
@@ -26,12 +26,12 @@
       </article>
       
       <!-- 검색창 부분 -->
-      <article>
+      <article class="search-box">
         <input type="search" name="search" id="">
       </article>
 
       <!-- 나라 리스트 -->
-       <article>
+       <article class="country-list">
         <ul>
           {% for i in range(9) %}
           <li>
@@ -55,9 +55,9 @@
 <!-- ---------------------------------------------- -->
 
     <!-- 가운데 국가 지도 -->
-    <section>
+    <section class="medium-content">
       <!-- 상단 전세계 일간현황 -->
-      <article>
+      <article class="world-wide-daily">
         <h2>전세계 일간 현황</h2>
         <div class="world-count">
           <div class="daily-covid">
@@ -92,16 +92,16 @@
             </div>
             <div class="column data-column">
                 <div class="data-row">
-                    <span class="label">111,450,604 명</span>
-                    <span class="value">(500,405 ▲)</span>
+                    <span class="total-data">111,450,604 명</span>
+                    <span class="change-data">(500,405 ▲)</span>
                 </div>
                 <div class="data-row">
-                    <span class="label">12,506,402 명</span>
-                    <span class="value">(20,405 ▼)</span>
+                    <span class="total-data">12,506,402 명</span>
+                    <span class="change-data">(20,405 ▼)</span>
                 </div>
                 <div class="data-row">
-                    <span class="label">500,402명</span>
-                    <span class="value">( 544,203 ▲)</span>
+                    <span class="total-data">500,402명</span>
+                    <span class="change-data">( 544,203 ▲)</span>
                 </div>
             </div>
           </div>
@@ -109,12 +109,12 @@
       </article>
 
       <!-- 지도 -->
-      <article>
+      <article class="covid-map">
         지도부분입니다
       </article>
 
       <!-- 그래프 -->
-      <article>
+      <article class="graph-box">
         <div class="graph-btn">
           <button>원형 그래프</button>
           <button>막대 그래프</button>
@@ -132,8 +132,8 @@
 
 
     <!-- 오른쪽 크롤링 뉴스-->
-    <section>
-
+    <section class="right-content">
+      크롤링 영역입니다.
     </section>
   </main>
 </body>
