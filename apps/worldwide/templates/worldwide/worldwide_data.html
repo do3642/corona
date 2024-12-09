@@ -4,8 +4,137 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Document</title>
+  <link rel="stylesheet" href="{{ url_for('worldwide.static', filename='css/worldwide.css') }}">
+
 </head>
 <body>
-  <h1>국외 페이지</h1>
+  <nav>
+    임시네비
+  </nav>
+  
+  <main>
+    <!-- 왼쪽 국가 리스트 -->
+    <section>
+      <!-- 데이터 업데이트날짜 -->
+      <article class="update-day">
+        <p>최신 업데이트 날짜</p>
+        <p>2024.12.06 11:00</p>
+        <p>
+          <strong>확진자</strong>
+          <span>| 사망자</span>
+        </p>
+      </article>
+      
+      <!-- 검색창 부분 -->
+      <article>
+        <input type="search" name="search" id="">
+      </article>
+
+      <!-- 나라 리스트 -->
+       <article>
+        <ul>
+          {% for i in range(9) %}
+          <li>
+              <p>
+                  <strong>국가명 {{ i + 1 }}</strong>
+                  <span>| 일일 감염비율 {{ (i+1)*5 }}%</span>
+              </p>
+              <p>
+                  <strong>일간현황</strong>
+                  <span>
+                      <strong>{{ (i+1)*1000 }}</strong>
+                      <small>| {{ (i+1)*50 }}</small>
+                  </span>
+              </p>
+          </li>
+          {% endfor %}
+         </ul> 
+       </article>
+    </section>
+
+<!-- ---------------------------------------------- -->
+
+    <!-- 가운데 국가 지도 -->
+    <section>
+      <!-- 상단 전세계 일간현황 -->
+      <article>
+        <h2>전세계 일간 현황</h2>
+        <div class="world-count">
+          <div class="daily-covid">
+            <select name="" id="">
+              <option value="yesterday">어제</option>
+              <option value="today">오늘</option>
+              <option value="tomorrow">내일(예측)</option>
+            </select>
+            <div class="daily-covid-box">
+              <div>
+                <p>확진자</p>
+                <p>1,450,604 명</p>
+                <p>( 500,403 ▲)</p>
+              </div>
+              <div>
+                <p>확진자</p>
+                <p>1,450,604 명</p>
+                <p>( 500,403 ▲)</p>
+              </div>
+              <div>
+                <p>확진자</p>
+                <p>1,450,604 명</p>
+                <p>( 500,403 ▲)</p>
+              </div>
+            </div>
+          </div>
+          <div class="all-day-covid">
+              <div class="column title-column">
+                <h3>총 확진자</h3>
+                <h3>총 완치자</h3>
+                <h3>총 사망자</h3>
+            </div>
+            <div class="column data-column">
+                <div class="data-row">
+                    <span class="label">111,450,604 명</span>
+                    <span class="value">(500,405 ▲)</span>
+                </div>
+                <div class="data-row">
+                    <span class="label">12,506,402 명</span>
+                    <span class="value">(20,405 ▼)</span>
+                </div>
+                <div class="data-row">
+                    <span class="label">500,402명</span>
+                    <span class="value">( 544,203 ▲)</span>
+                </div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- 지도 -->
+      <article>
+        지도부분입니다
+      </article>
+
+      <!-- 그래프 -->
+      <article>
+        <div class="graph-btn">
+          <button>원형 그래프</button>
+          <button>막대 그래프</button>
+          <button>점선 그래프</button>
+        </div>
+        <div class="graph-views">
+          <div class="graph-view">그래프영역1</div>
+          <div class="graph-view">그래프영역2</div>
+          <div class="graph-view">그래프영역3</div>
+        </div>
+      </article>
+    </section>
+
+<!-- ---------------------------------------------- -->
+
+
+    <!-- 오른쪽 크롤링 뉴스-->
+    <section>
+
+    </section>
+  </main>
 </body>
 </html>
