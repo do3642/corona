@@ -28,16 +28,17 @@
       <!-- 검색창 부분 -->
       <article class="search-box">
         <input type="search" name="search" id="">
+        <i class="fa-solid fa-magnifying-glass search-icon"></i>
       </article>
 
       <!-- 나라 리스트 -->
        <article class="country-list">
         <ul>
-          {% for i in range(9) %}
+          {% for i in range(20) %}
           <li>
               <p>
                   <strong>국가명 {{ i + 1 }}</strong>
-                  <span>| 일일 감염비율 {{ (i+1)*5 }}%</span>
+                  <span>| 일일 감염비율 <span>{{ (i+1)*5 }}%</span></span>
               </p>
               <p>
                   <strong>일간현황</strong>
@@ -55,7 +56,7 @@
 <!-- ---------------------------------------------- -->
 
     <!-- 가운데 국가 지도 -->
-    <section class="medium-content">
+    <section class="middle-content">
       <!-- 상단 전세계 일간현황 -->
       <article class="world-wide-daily">
         <h2>전세계 일간 현황</h2>
@@ -73,12 +74,12 @@
                 <p>( 500,403 ▲)</p>
               </div>
               <div>
-                <p>확진자</p>
+                <p>완치자</p>
                 <p>1,450,604 명</p>
                 <p>( 500,403 ▲)</p>
               </div>
               <div>
-                <p>확진자</p>
+                <p>사망자</p>
                 <p>1,450,604 명</p>
                 <p>( 500,403 ▲)</p>
               </div>
@@ -110,7 +111,9 @@
 
       <!-- 지도 -->
       <article class="covid-map">
-        지도부분입니다
+        <div id="map-container" style="height: 400px;">
+          {{ map_html|safe }}
+        </div>
       </article>
 
       <!-- 그래프 -->
@@ -133,8 +136,14 @@
 
     <!-- 오른쪽 크롤링 뉴스-->
     <section class="right-content">
+      <div class="right-tab-btn">
+        <div>관련 뉴스</div>
+        <div>기능 </div>
+      </div>
       크롤링 영역입니다.
     </section>
   </main>
+
+  <script src="https://kit.fontawesome.com/c0680c70ea.js" crossorigin="anonymous"></script>
 </body>
 </html>
