@@ -18,7 +18,7 @@
       <!-- 데이터 업데이트날짜 -->
       <article class="update-day">
         <p>최신 업데이트 날짜</p>
-        <p>{{records[0].date_reported}} 11:00</p>
+        <p>{{records[0][0].date_reported}} 11:00</p>
         <p>
           <strong>확진자</strong>
           <span>| 사망자</span>
@@ -37,25 +37,34 @@
           {% for record in records %}
           <li>
               <p>
-                  <strong>{{record.country}}</strong>
-                  <span>| 일일 감염비율 <span>5%</span></span>
+                  <!-- 국가명: CountryTranslation의 country_korean -->
+                  <strong>{{ record[1].country_korean }}</strong>
+                  {% set country_percentage = country_percentages | selectattr('country', 'equalto', record[0].country) | list %}
+                  {% if country_percentage %}
+                      <span>| 일일 감염비율 <span>{{ country_percentage[0].percentage }}%</span></span>
+                  {% else %}
+                      <span>| 일일 감염비율 <span>0%</span></span>
+                  {% endif %}
               </p>
               <p>
                   <strong>일간현황</strong>
                   <span>
-                      <strong>{{record.new_cases}}</strong>
-                      <small>| {{record.new_deaths}}</small>
+                      <!-- 일일 신규 감염 및 사망 데이터: WhoData의 new_cases 및 new_deaths -->
+                      <strong>{{ record[0].new_cases }}</strong>
+                      <small>| {{ record[0].new_deaths }}</small>
                   </span>
               </p>
               <p>
-                <strong>누적현황</strong>
-                <span>
-                    <strong>{{record.cumulative_cases}}</strong>
-                    <small>| {{record.cumulative_deaths}}</small>
-                </span>
-            </p>
+                  <strong>누적현황</strong>
+                  <span>
+                      <!-- 누적 감염 및 사망 데이터: WhoData의 cumulative_cases 및 cumulative_deaths -->
+                      <strong>{{ record[0].cumulative_cases }}</strong>
+                      <small>| {{ record[0].cumulative_deaths }}</small>
+                  </span>
+              </p>
           </li>
           {% endfor %}
+          
          </ul> 
        </article>
     </section>

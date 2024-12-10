@@ -12,3 +12,9 @@ class WhoData(db.Model):
     cumulative_cases = db.Column(db.Integer, nullable=True)  # 누적 확진자 수
     new_deaths = db.Column(db.Integer, nullable=True)  # 신규 사망자 수
     cumulative_deaths = db.Column(db.Integer, nullable=True)  # 누적 사망자 수
+
+class CountryTranslation(db.Model):
+    __tablename__ = 'country_translation'
+
+    country_code = db.Column(db.String(10), primary_key=True)  # 국가 코드 (ISO 3자리)
+    country_korean = db.Column(db.String(255), nullable=False)  # 한글 국가명
