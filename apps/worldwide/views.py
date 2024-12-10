@@ -1,5 +1,5 @@
-from flask import Blueprint, render_template
-
+from flask import Blueprint, render_template,jsonify
+from datetime import timedelta
 import datetime
 import folium
 
@@ -82,3 +82,90 @@ def insert_data():
 def insert_trans_data():
     insert_country_translations()
     return "번역 작업 완료"
+
+
+def get_covid_data_for_date(date_type):
+    current_date = datetime.datetime.now().date()
+    two_years_ago = current_date - datetime.timedelta(days=365 * 2 - 180)
+
+    today = two_years_ago
+    if date_type == "yesterday":
+        date = today - timedelta(days=1)
+    elif date_type == "tomorrow":
+        date = today + timedelta(days=1)
+    else:  # "today"
+        date = today
+
+    # 해당 날짜의 데이터 가져오기 (new_cases와 new_deaths 합산)
+    covid_data_today = db.session.query(
+        db.func.sum(WhoData.new_cases).label('total_new_cases_today'),
+        db.func.sum(WhoData.new_deaths).label('total_new_deaths_today')
+    ).filter(WhoData.date_reported == date).first()
+
+    # 어제 날짜의 데이터 가져오기 (new_cases와 new_deaths 합산)
+    yesterday = date - timedelta(days=1)
+    covid_data_yesterday = db.session.query(
+        db.func.sum(WhoData.new_cases).label('total_new_cases_yesterday'),
+        db.func.sum(WhoData.new_deaths).label('total_new_deaths_yesterday')
+    ).filter(WhoData.date_reported == yesterday).first()
+
+    # 값이 없으면 오류코드와 404페이지 반환
+    if not covid_data_today:
+        return {"error": "No data found for the selected date."}, 404
+
+    # 오늘과 어제의 신규 확진자 수, 신규 사망자 수
+    total_new_cases_today = covid_data_today.total_new_cases_today or 0
+    total_new_deaths_today = covid_data_today.total_new_deaths_today or 0
+    total_new_cases_yesterday = covid_data_yesterday.total_new_cases_yesterday or 0
+    total_new_deaths_yesterday = covid_data_yesterday.total_new_deaths_yesterday or 0
+
+
+    # 신규 확진자 변화량 (오늘 - 어제)
+    new_cases_change = total_new_cases_today - total_new_cases_yesterday
+    new_deaths_change = total_new_deaths_today - total_new_deaths_yesterday
+  
+
+    # -------------------누적 확진자 수 (전체 확진자) 계산-------------------
+    total_cases = db.session.query(
+        db.func.sum(WhoData.cumulative_cases).label('total_cumulative_cases')
+    ) \
+    .filter(WhoData.date_reported == two_years_ago) \
+    .scalar() 
+
+
+    # 전체 누적 사망자 수 계산
+    total_deaths = db.session.query(
+        db.func.sum(WhoData.cumulative_deaths).label('total_cumulative_deaths')
+    ) \
+    .filter(WhoData.date_reported == two_years_ago) \
+    .scalar()
+
+    # 전체 회복자 수는 아직 없으므로 0으로 설정
+    total_recovered = 0
+    
+    print(total_cases)
+    print(total_deaths)
+
+    # -------------------결과 반환-------------------
+    return {
+        "new_cases": total_new_cases_today,
+        "new_cases_change": f"({new_cases_change} ▲)" if new_cases_change >= 0 else f"({abs(new_cases_change)} ▼)",
+        "new_deaths": total_new_deaths_today,
+        "new_deaths_change": f"({new_deaths_change} ▲)" if new_deaths_change >= 0 else f"({abs(new_deaths_change)} ▼)",
+        "total_cases": total_cases,  # 각 국가별 누적 확진자 합산
+        "total_cases_change": "",  # 예측 값은 없으므로 그대로 두기
+        "total_recovered": total_recovered,
+        "total_recovered_change": "",  # 예측 값은 없으므로 그대로 두기
+        "total_deaths": total_deaths,  # 각 국가별 누적 사망자 합산
+        "total_deaths_change": ""  # 예측 값은 없으므로 그대로 두기
+    }
+
+
+@worldwide_bp.route('/covid-data/<date_type>', methods=['GET'])
+def get_covid_data(date_type):
+    try:
+        data = get_covid_data_for_date(date_type)
+        return jsonify(data)
+    except Exception as e:
+        # 오류가 발생한 경우 500 오류와 함께 메시지 반환
+        return jsonify({"error": str(e)}), 500
