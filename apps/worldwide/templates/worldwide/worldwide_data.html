@@ -18,7 +18,7 @@
       <!-- 데이터 업데이트날짜 -->
       <article class="update-day">
         <p>최신 업데이트 날짜</p>
-        <p>2024.12.06 11:00</p>
+        <p>{{records[0].date_reported}} 11:00</p>
         <p>
           <strong>확진자</strong>
           <span>| 사망자</span>
@@ -34,19 +34,26 @@
       <!-- 나라 리스트 -->
        <article class="country-list">
         <ul>
-          {% for i in range(20) %}
+          {% for record in records %}
           <li>
               <p>
-                  <strong>국가명 {{ i + 1 }}</strong>
-                  <span>| 일일 감염비율 <span>{{ (i+1)*5 }}%</span></span>
+                  <strong>{{record.country}}</strong>
+                  <span>| 일일 감염비율 <span>5%</span></span>
               </p>
               <p>
                   <strong>일간현황</strong>
                   <span>
-                      <strong>{{ (i+1)*1000 }}</strong>
-                      <small>| {{ (i+1)*50 }}</small>
+                      <strong>{{record.new_cases}}</strong>
+                      <small>| {{record.new_deaths}}</small>
                   </span>
               </p>
+              <p>
+                <strong>누적현황</strong>
+                <span>
+                    <strong>{{record.cumulative_cases}}</strong>
+                    <small>| {{record.cumulative_deaths}}</small>
+                </span>
+            </p>
           </li>
           {% endfor %}
          </ul> 

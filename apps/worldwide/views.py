@@ -1,6 +1,11 @@
 from flask import Blueprint, render_template
+
+import datetime
 import folium
-from io import BytesIO
+
+from apps.worldwide.insertData import insert_data_to_db
+from apps.worldwide.models import WhoData
+from apps.app import db
 
 worldwide_bp = Blueprint(
     'worldwide',
@@ -12,6 +17,18 @@ worldwide_bp = Blueprint(
 
 @worldwide_bp.route('/')
 def worldwide_data():
+
+    # 현재날짜
+    current_date = datetime.datetime.now().date()
+    # 데이터 업데이트가 안되므로 임의의 날짜를 잡기위해 현재 날짜 -2년6개월
+    two_years_ago = current_date - datetime.timedelta(days=365*2-180)
+
+    # 날짜레코드중 현재날짜-2년6개월한 날짜와 같을때 country컬럼의 중복값을 제거한 레코드들을 담음
+    records = WhoData.query.filter(WhoData.date_reported == two_years_ago).distinct(WhoData.country).all()
+
+
+
+
      # Folium 지도 생성
     start_coords = [20, 0]  # 전 세계 중심 좌표
     world_map = folium.Map(location=start_coords, zoom_start=2)
@@ -25,4 +42,10 @@ def worldwide_data():
 
     map_html = world_map._repr_html_()
 
-    return render_template('worldwide/worldwide_data.html', map_html=map_html)
+    return render_template('worldwide/worldwide_data.html', map_html=map_html, records=records)
+
+# 데이터 삽입 라우트
+@worldwide_bp.route('/insert-data')
+def insert_data():
+    insert_data_to_db()
+    return "데이터 삽입 작업이 완료되었습니다!"
