@@ -5,16 +5,26 @@
 }
 
 .domestic_nav {
+  width: 100%;
   display: flex;
-  margin-top:30px;
-  justify-content: center;
+  justify-content: end;
 }
 
-.domestic_nav li {
-  display: inline-block;
-  font-size: 25px;
-  width: 200px;
-  text-align: center;
+.domestic_nav_bg {
+  display: flex;
+  margin-top:30px;
+  margin-right: 40px;
+  border: 1px solid skyblue;
+  background-color: skyblue;
+  border-radius: 50%;
+  width: 60px;
+  height: 55px;
+  justify-content: center;
+  align-items: center;
+}
+
+.domestic_nav a {
+  font-size: 20px;
 }
 
 .domestic_sidebar {
@@ -68,4 +78,11 @@
 
 .domestic_sidebar a:hover {
   opacity: 0.7;
+}
+
+.covid-domestic-map {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 35px;
 }
