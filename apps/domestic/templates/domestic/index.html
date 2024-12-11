@@ -1,1 +1,39 @@
 {% extends "domestic/base.html" %}
+{% block css %}
+<link rel="stylesheet" href="{{ url_for('domestic.static', filename='css/style.css') }}">
+{% endblock %}
+
+{% block title %}
+국내 현황
+{% endblock %}
+
+{% block content %}
+<!-- 사이드바는 모든 차트들과 화면 다 구현 되면 그때 구현 할 예정 -->
+<!-- <div class="domestic_sidebar">
+      <ul class="domestic_sidebar_tag">
+        <li><a href="#graph1">지역별<br>발생률</a></li>
+        <li><a href="#">버튼1</a></li>
+        <li><a href="#">버튼1</a></li>
+        <li><a href="#">버튼1</a></li>
+        <a href="#" class="go-to-top">맨 위로</a>
+      </ul>
+    </div> -->
+
+    <article class="covid-domestic-map">
+      <div class="map-container" style="height: 500px; width: 1000px">
+        {{ map_html | safe }}
+      </div>
+    </article>
+
+    <article id="graph1">
+      <button>발생률</button>
+      <button>사망률</button>
+      <canvas id="incidence"></canvas>
+    </article>
+  </section>
+{% endblock %}
+
+{% block script %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{{ url_for('domestic.static', filename='js/graph.js') }}"></script>
+{% endblock %}
