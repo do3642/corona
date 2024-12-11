@@ -164,10 +164,46 @@ main{
 .daily-covid-box div p:nth-of-type(2){
   font-size: 1.5em;
 }
-.daily-covid-box div p:nth-of-type(3){
+.daily-covid-box div p:nth-of-type(3){}
+.plus{
   color: red;
 }
+.minus{
+  color: blue;
+}
 
+/* 공통 로딩 클래스 */
+.loading {
+  color: #4caf50; /* 강조색 */
+  font-size: 16px;
+  font-weight: bold;
+  position: relative;
+  animation: jump 0.8s ease-in-out infinite;
+}
+
+/* 점프 애니메이션 */
+@keyframes jump {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* 배경 깜빡임 효과 */
+.loading-blink {
+  animation: blink 0.8s ease-in-out infinite;
+}
+
+@keyframes blink {
+  0%, 100% {
+    background-color: rgba(255, 255, 255, 0);
+  }
+  50% {
+    background-color: rgba(0, 255, 0, 0.2);
+  }
+}
 
 
 

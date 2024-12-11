@@ -96,13 +96,12 @@ def get_covid_data_for_date(date_type):
     else:  # "today"
         date = today
 
-    # 해당 날짜의 데이터 가져오기 (new_cases와 new_deaths 합산)
+    # 해당 날짜에 해당하는 확진자,사망자의 합
     covid_data_today = db.session.query(
         db.func.sum(WhoData.new_cases).label('total_new_cases_today'),
         db.func.sum(WhoData.new_deaths).label('total_new_deaths_today')
     ).filter(WhoData.date_reported == date).first()
-
-    # 어제 날짜의 데이터 가져오기 (new_cases와 new_deaths 합산)
+    # 해당 날짜의 어제에 해당하는 확진자,사망자의 합
     yesterday = date - timedelta(days=1)
     covid_data_yesterday = db.session.query(
         db.func.sum(WhoData.new_cases).label('total_new_cases_yesterday'),
@@ -113,7 +112,7 @@ def get_covid_data_for_date(date_type):
     if not covid_data_today:
         return {"error": "No data found for the selected date."}, 404
 
-    # 오늘과 어제의 신규 확진자 수, 신규 사망자 수
+    # 오늘과 어제의 신규 확진자 수, 신규 사망자 수 //튜플형태를 분리
     total_new_cases_today = covid_data_today.total_new_cases_today or 0
     total_new_deaths_today = covid_data_today.total_new_deaths_today or 0
     total_new_cases_yesterday = covid_data_yesterday.total_new_cases_yesterday or 0
@@ -129,7 +128,7 @@ def get_covid_data_for_date(date_type):
     total_cases = db.session.query(
         db.func.sum(WhoData.cumulative_cases).label('total_cumulative_cases')
     ) \
-    .filter(WhoData.date_reported == two_years_ago) \
+    .filter(WhoData.date_reported == date) \
     .scalar() 
 
 
@@ -137,27 +136,28 @@ def get_covid_data_for_date(date_type):
     total_deaths = db.session.query(
         db.func.sum(WhoData.cumulative_deaths).label('total_cumulative_deaths')
     ) \
-    .filter(WhoData.date_reported == two_years_ago) \
+    .filter(WhoData.date_reported == date) \
     .scalar()
 
     # 전체 회복자 수는 아직 없으므로 0으로 설정
     total_recovered = 0
+
     
-    print(total_cases)
-    print(total_deaths)
+    
+
 
     # -------------------결과 반환-------------------
     return {
         "new_cases": total_new_cases_today,
-        "new_cases_change": f"({new_cases_change} ▲)" if new_cases_change >= 0 else f"({abs(new_cases_change)} ▼)",
+        "new_cases_change": new_cases_change,
         "new_deaths": total_new_deaths_today,
-        "new_deaths_change": f"({new_deaths_change} ▲)" if new_deaths_change >= 0 else f"({abs(new_deaths_change)} ▼)",
-        "total_cases": total_cases,  # 각 국가별 누적 확진자 합산
-        "total_cases_change": "",  # 예측 값은 없으므로 그대로 두기
+        "new_deaths_change":new_deaths_change,
+        "total_cases": total_cases,  
+        "total_cases_change": total_new_cases_today,
         "total_recovered": total_recovered,
-        "total_recovered_change": "",  # 예측 값은 없으므로 그대로 두기
-        "total_deaths": total_deaths,  # 각 국가별 누적 사망자 합산
-        "total_deaths_change": ""  # 예측 값은 없으므로 그대로 두기
+        "total_recovered_change": 0, 
+        "total_deaths": total_deaths, 
+        "total_deaths_change": total_new_deaths_today 
     }
 
 
