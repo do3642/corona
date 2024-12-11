@@ -27,7 +27,7 @@
       
       <!-- 검색창 부분 -->
       <article class="search-box">
-        <input type="search" name="search" id="">
+        <input type="search" name="search" id="search-input" placeholder="국가명을 입력하세요">
         <i class="fa-solid fa-magnifying-glass search-icon"></i>
       </article>
 
@@ -39,6 +39,7 @@
               <p>
                   <!-- 국가명: CountryTranslation의 country_korean -->
                   <strong>{{ record[1].country_korean }}</strong>
+                  <span class="country-english">{{record[0].country}}</span>
                   {% set country_percentage = country_percentages | selectattr('country', 'equalto', record[0].country) | list %}
                   {% if country_percentage %}
                       <span>| 일일 감염비율 <span>{{ country_percentage[0].percentage }}%</span></span>
@@ -50,16 +51,16 @@
                   <strong>일간현황</strong>
                   <span>
                       <!-- 일일 신규 감염 및 사망 데이터: WhoData의 new_cases 및 new_deaths -->
-                      <strong>{{ record[0].new_cases }}</strong>
-                      <small>| {{ record[0].new_deaths }}</small>
+                      <strong>{{ "{:,}".format(record[0].new_cases | int) }}</strong>
+                      <small>| {{ "{:,}".format(record[0].new_deaths | int) }}</small>
                   </span>
               </p>
               <p>
                   <strong>누적현황</strong>
                   <span>
                       <!-- 누적 감염 및 사망 데이터: WhoData의 cumulative_cases 및 cumulative_deaths -->
-                      <strong>{{ record[0].cumulative_cases }}</strong>
-                      <small>| {{ record[0].cumulative_deaths }}</small>
+                      <strong>{{ "{:,}".format(record[0].cumulative_cases | int) }}</strong>
+                      <small>| {{ "{:,}".format(record[0].cumulative_deaths | int) }}</small>
                   </span>
               </p>
           </li>

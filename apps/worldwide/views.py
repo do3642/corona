@@ -31,7 +31,7 @@ def worldwide_data():
         WhoData.date_reported == two_years_ago,
         WhoData.country_code == CountryTranslation.country_code
     ).distinct(WhoData.country).all()
-
+    
     # -------------------일일 감염률을 위한 계산 ---------------
     # 전체 new_cases 합산
     total_new_cases = sum(record[0].new_cases for record in records)

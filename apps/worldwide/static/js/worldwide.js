@@ -41,6 +41,9 @@ document.addEventListener('DOMContentLoaded', () => {
   fetchCovidData(selectedDateType);
 });
 
+
+
+
 // 서버에서 COVID-19 데이터를 가져오는 함수
 async function fetchCovidData(dateType) {
   try {
@@ -89,3 +92,48 @@ function updateChange(selector, value) {
 
 
 
+// ----------------검색 기능
+document.getElementById('search-input').addEventListener('keydown', function(event) {
+  // 엔터 키가 눌렸을 때만 검색
+  if (event.key === 'Enter') {
+    searchCountries();
+  }
+});
+document.querySelector('.search-icon').addEventListener('click', function() {
+  // 검색 아이콘 클릭 시 검색
+  searchCountries();
+});
+document.getElementById('search-input').addEventListener('input', function() {
+  // 검색어가 비었으면 전체 리스트를 다시 표시
+  if (this.value === '') {
+    showAllCountries();
+  }
+});
+
+function searchCountries() {
+  const searchTerm = document.getElementById('search-input').value.toLowerCase(); // 입력한 검색어
+  const listItems = document.querySelectorAll('.country-list li'); // 모든 국가 리스트 항목
+
+  // 검색어가 비어 있으면 아무 것도 하지 않음 (change와 충돌방지겸)
+  if (searchTerm === '') return;
+
+   // 검색어가 있으면 해당 항목만 표시
+  listItems.forEach(item => {
+    const countryName = item.querySelector('p strong').textContent.toLowerCase(); // 첫 번째 p 안의 strong 태그 (국가명)
+    const countryEnglishName = item.querySelector('.country-english').textContent.toLowerCase(); // 영어 국가명
+    if (countryName.includes(searchTerm) || countryEnglishName.includes(searchTerm)) {
+      item.classList.remove('hidden'); // 일치하는 항목 표시
+    } else {
+      item.classList.add('hidden'); // 일치하지 않는 항목 숨김
+    }
+  });
+}
+
+function showAllCountries() {
+  const listItems = document.querySelectorAll('.country-list li');
+  listItems.forEach(item => {
+    item.classList.remove('hidden'); // 모든 항목 표시
+  });
+}
+
+// --------------

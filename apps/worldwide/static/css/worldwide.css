@@ -101,6 +101,10 @@ main{
   font-size: 0.9em;
 }
 
+/* 숨김 처리된 항목 */
+.country-list li.hidden {
+  display: none; /* 해당 항목 숨기기 */
+}
 
 
 /* ------------------------------------- */
