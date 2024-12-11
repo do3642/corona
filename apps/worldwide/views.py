@@ -1,11 +1,14 @@
-from flask import Blueprint, render_template,jsonify
+from flask import Blueprint, render_template, jsonify, request
 from datetime import timedelta
 import datetime
 import folium
+import json
+
 
 from apps.worldwide.insertData import insert_data_to_db
 from apps.worldwide.insertCountryTranslations import insert_country_translations
-from apps.worldwide.models import WhoData, CountryTranslation
+from apps.worldwide.insertLatLong import insert_data_to_db_Lat_Long
+from apps.worldwide.models import WhoData, CountryTranslation, WorldLatLong
 from apps.app import db
 
 worldwide_bp = Blueprint(
@@ -82,6 +85,11 @@ def insert_data():
 def insert_trans_data():
     insert_country_translations()
     return "번역 작업 완료"
+
+@worldwide_bp.route('/insert-latlong-data')
+def insert_LatLong_data():
+    insert_data_to_db_Lat_Long()
+    return "위,경도 데이터 삽입 작업이 완료되었습니다!"
 
 
 def get_covid_data_for_date(date_type):
@@ -169,3 +177,6 @@ def get_covid_data(date_type):
     except Exception as e:
         # 오류가 발생한 경우 500 오류와 함께 메시지 반환
         return jsonify({"error": str(e)}), 500
+
+
+

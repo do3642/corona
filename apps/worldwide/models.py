@@ -18,3 +18,12 @@ class CountryTranslation(db.Model):
 
     country_code = db.Column(db.String(10), primary_key=True)  # 국가 코드 (ISO 3자리)
     country_korean = db.Column(db.String(255), nullable=False)  # 한글 국가명
+
+
+class WorldLatLong(db.Model):
+    __tablename__ = 'world_lat_long'
+
+    country_code = db.Column(db.String(10), primary_key=True)  # 국가 코드 (ISO 3자리)
+    country = db.Column(db.String(255), nullable=False)  # 국가명
+    country_lat = db.Column(db.Float, nullable=False)  # 위도
+    country_long = db.Column(db.Float, nullable=False)  # 경도
