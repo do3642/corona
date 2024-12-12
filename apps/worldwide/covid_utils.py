@@ -1,21 +1,31 @@
 from datetime import timedelta
 import datetime
-from apps.worldwide.models import WhoData, CountryTranslation
-from apps.app import db
 import folium
+from folium.plugins import MarkerCluster
+import json
+
+
+from apps.worldwide.models import WhoData, CountryTranslation,WorldLatLong
+from apps.app import db
+
 
 def get_covid_data_for_date(date_type):
+    # 데이터 타입은 셀렉트 박스에서 클릭한 value
     current_date = datetime.datetime.now().date()
-    two_years_ago = current_date - datetime.timedelta(days=365 * 2 - 180)
+    two_years_ago = current_date - datetime.timedelta(days=365 * 2 + 180)
     
+    # 2년6개월 전을 오늘로 기본세팅
     today = two_years_ago
     if date_type == "yesterday":
         date = today - timedelta(days=1)
     elif date_type == "tomorrow":
         date = today + timedelta(days=1)
-    else:  # "today"
+    else:  
         date = today
 
+    # 해당 날짜에 해당하는 전체확진자,전체사망자 뽑아옴
+    # 한번에 두개 다 뽑는 이유는
+    # 어제 ,오늘 ,내일 선택하는 카테고리가 있는데 그거에 맞게끔 전날과 비교해서 증가,감소량을 파악하기 위함
     covid_data_today = db.session.query(
         db.func.sum(WhoData.new_cases).label('total_new_cases_today'),
         db.func.sum(WhoData.new_deaths).label('total_new_deaths_today')
@@ -30,14 +40,18 @@ def get_covid_data_for_date(date_type):
     if not covid_data_today:
         return {"error": "No data found for the selected date."}, 404
 
+    # 데이터가 튜플형태로 담겨있어서 따로 분리시켜줌 값이없으면 0 예외처리
     total_new_cases_today = covid_data_today.total_new_cases_today or 0
     total_new_deaths_today = covid_data_today.total_new_deaths_today or 0
     total_new_cases_yesterday = covid_data_yesterday.total_new_cases_yesterday or 0
     total_new_deaths_yesterday = covid_data_yesterday.total_new_deaths_yesterday or 0
 
+    # 전날과 오늘을 비교하여 증가,감소량 계산
     new_cases_change = total_new_cases_today - total_new_cases_yesterday
     new_deaths_change = total_new_deaths_today - total_new_deaths_yesterday
 
+    # 해당하는 날짜의 모든 국가들이 가지고 있는 누적확진자를 합산함 (전세계 누적 확진자,사망자)
+    # scalar을 쓰는 이유는 안쓰면 튜플에 있는값을 한번 더 꺼내야함
     total_cases = db.session.query(
         db.func.sum(WhoData.cumulative_cases).label('total_cumulative_cases')
     ).filter(WhoData.date_reported == date).scalar()
@@ -46,8 +60,10 @@ def get_covid_data_for_date(date_type):
         db.func.sum(WhoData.cumulative_deaths).label('total_cumulative_deaths')
     ).filter(WhoData.date_reported == date).scalar()
 
+    # 완치자는 데이터 세팅이 안돼서 기본 0
     total_recovered = 0
 
+    # 딕셔너리 형태 키/밸류로 반환
     return {
         "new_cases": total_new_cases_today,
         "new_cases_change": new_cases_change,
@@ -63,11 +79,12 @@ def get_covid_data_for_date(date_type):
 
 def get_covid_map_and_data():
     current_date = datetime.datetime.now().date()
-    two_years_ago = current_date - datetime.timedelta(days=365 * 2 - 180)
+    two_years_ago = current_date - datetime.timedelta(days=365 * 2 + 180)
 
-    records = db.session.query(WhoData, CountryTranslation).filter(
+    records = db.session.query(WhoData, CountryTranslation, WorldLatLong).filter(
         WhoData.date_reported == two_years_ago,
-        WhoData.country_code == CountryTranslation.country_code
+        WhoData.country_code == CountryTranslation.country_code,
+        WhoData.country_code == WorldLatLong.country_code
     ).distinct(WhoData.country).all()
 
     total_new_cases = sum(record[0].new_cases for record in records)
@@ -87,9 +104,20 @@ def get_covid_map_and_data():
 
     start_coords = [20, 0]
     world_map = folium.Map(location=start_coords, zoom_start=2)
-    folium.Marker([37.5665, 126.9780], popup='Seoul, South Korea').add_to(world_map)
-    folium.Marker([40.7128, -74.0060], popup='New York, USA').add_to(world_map)
-    folium.Marker([48.8566, 2.3522], popup='Paris, France').add_to(world_map)
+
+    # 마커 클러스터 생성
+    marker_cluster = MarkerCluster().add_to(world_map)
+
+    # 마커 추가
+    for record in records:
+        lat = record[2].country_lat
+        lng = record[2].country_long
+        country = record[0].country
+
+        folium.Marker(
+            [lat, lng],
+            popup=f'{country}'
+        ).add_to(marker_cluster)
 
     map_html = world_map._repr_html_()
 
