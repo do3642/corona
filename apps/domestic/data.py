@@ -43,8 +43,26 @@ def get_graph(graph_id):
   
   elif graph_id == 'age_incidence':
     age = sheet_data.get('연령별(10세단위)')
-    cumulative_cases = age.iloc[0,2:]
+    cumulative_cases = age.iloc[0, 2:]
+    cumulative_cases.index = age.columns[2:]
 
+    average_population = population_data.iloc[:, 2:].mean()
+    print(average_population)
+
+    incidence_rate = (cumulative_cases / average_population) * 100
+
+    print(incidence_rate.isnull())
+
+    data = {
+      "labels": incidence_rate.index.tolist(),
+      "values": incidence_rate.tolist(),
+      "label": '연령대별 코로나 발생률(%)',
+      "type": "bar",
+      "backgroundColor": 'rgba(202, 190, 28, 1)'
+    }
+
+    return jsonify(data)
+    
   
   else:
     return jsonify({"error": "해당 그래프ID는 존재하지 않는 그래프입니다."}), 404

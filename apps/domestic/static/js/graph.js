@@ -3,6 +3,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // 처음 들어갔을 때 화면에 뿌려줄 데이터들만 반복을 돌리면서 createChart 함수에 넣어줌.
   const graphConfigs = [
     {id: "chart-area", url: "/api/graph/area_incidence"},
+    {id: "chart-age", url: "/api/graph/age_incidence"},
   ]
 
   graphConfigs.forEach(config => {
