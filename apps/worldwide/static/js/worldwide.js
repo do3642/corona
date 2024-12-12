@@ -139,3 +139,103 @@ function showAllCountries() {
 // --------------
 
 // 국가리스트 클릭 시 서버에 국가명을 보내고 지도값을 받아 html에 적용
+
+document.addEventListener('DOMContentLoaded', function () {
+  const markerData = window.markerData;
+
+  const map = L.map('map-container');
+  map.setView([20, 0], 2);
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '© OpenStreetMap contributors',
+  }).addTo(map);
+
+  const markerCluster = L.markerClusterGroup().addTo(map);
+
+  markerData.forEach(marker => {
+      L.marker([marker.lat, marker.lng])
+          .bindPopup(`<strong>${marker.country}</strong>`)
+          .addTo(markerCluster);
+  });
+
+  let geojsonLayer;
+  fetch('/worldwide/static/data/world_countries.json')
+      .then(response => response.json())
+      .then(geojsonData => {
+          geojsonLayer = L.geoJson(geojsonData, {
+              style: {
+                  color: 'transparent',
+                  weight: 2,
+                  opacity: 0,
+                  fillOpacity: 0.3,
+              },
+              onEachFeature: function (feature, layer) {
+                  const countryName = feature.properties.sovereignt || feature.properties.name;
+                  layer.bindPopup(`<strong>${countryName}</strong>`);
+              },
+          }).addTo(map);
+      });
+
+  const countryListItems = document.querySelectorAll('.country-list li');
+  countryListItems.forEach(item => {
+      item.addEventListener('click', function () {
+          const lat = parseFloat(item.getAttribute('data-lat'));
+          const lng = parseFloat(item.getAttribute('data-lng'));
+          const countryName = item.getAttribute('data-country').trim();  // 공백 제거
+
+          if (!lat || !lng || !countryName) {
+              console.error("Invalid country data:", item);
+              return;
+          }
+
+          map.flyTo([lat, lng], 5);
+
+          geojsonLayer.eachLayer(function (layer) {
+              const geoJsonCountry = layer.feature.properties.sovereignt || layer.feature.properties.name;
+              const geoJsonNameLong = layer.feature.properties.name_long || '';
+              const geoJsonFormalEn = layer.feature.properties.formal_en || '';
+              const geoJsonNameCiawf = layer.feature.properties.name_ciawf || '';
+              const geoJsonBrkName = layer.feature.properties.brk_name || '';
+              const geoJsonNameKo = layer.feature.properties.name_ko || '';
+              const geoJsonNamePt = layer.feature.properties.name_pt || '';  // 추가된 속성
+
+              if (!geoJsonCountry) {
+                  console.warn("GeoJSON data missing country name:", layer.feature);
+                  return;
+              }
+
+              // 클릭한 국가명에서 괄호를 제거
+              const normalizedCountryName = countryName.trim().toLowerCase().replace(/\(.*\)/, '').trim();
+              
+              // GeoJSON 데이터 속성들 비교
+              const isClickedCountry = [
+                  geoJsonCountry,
+                  geoJsonNameLong,
+                  geoJsonFormalEn,
+                  geoJsonNameCiawf,
+                  geoJsonBrkName,
+                  geoJsonNameKo,
+                  geoJsonNamePt  // 비교 항목에 name_pt 추가
+              ].some(name => name.toLowerCase().replace(/\(.*\)/, '').trim() === normalizedCountryName);
+
+              if (isClickedCountry) {
+                  layer.setStyle({
+                      fillColor: 'orange',
+                      fillOpacity: 0.5,
+                      color: 'red',
+                      weight: 3
+                  });
+                  layer.openPopup();
+              } else {
+                  layer.setStyle({
+                      fillColor: 'transparent',
+                      fillOpacity: 0.3,
+                      color: 'transparent',
+                      weight: 2
+                  });
+              }
+          });
+      });
+  });
+});

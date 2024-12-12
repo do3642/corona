@@ -3,6 +3,7 @@ import datetime
 import folium
 from folium.plugins import MarkerCluster
 import json
+import os
 
 
 from apps.worldwide.models import WhoData, CountryTranslation,WorldLatLong
@@ -77,6 +78,9 @@ def get_covid_data_for_date(date_type):
         "total_deaths_change": total_new_deaths_today
     }
 
+
+
+
 def get_covid_map_and_data():
     current_date = datetime.datetime.now().date()
     two_years_ago = current_date - datetime.timedelta(days=365 * 2 + 180)
@@ -102,23 +106,40 @@ def get_covid_map_and_data():
                 'percentage': round(percentage, 2)
             })
 
-    start_coords = [20, 0]
-    world_map = folium.Map(location=start_coords, zoom_start=2)
 
-    # 마커 클러스터 생성
-    marker_cluster = MarkerCluster().add_to(world_map)
-
-    # 마커 추가
+     # 마커 데이터 생성
+    marker_data = []
     for record in records:
         lat = record[2].country_lat
         lng = record[2].country_long
         country = record[0].country
+        marker_data.append({
+            'lat': lat,
+            'lng': lng,
+            'country': country
+        })
 
+    # 폴리움 지도 생성
+    start_coords = [20, 0]
+    world_map = folium.Map(location=start_coords, zoom_start=2)
+
+    marker_cluster = MarkerCluster().add_to(world_map)
+
+    for marker in marker_data:
         folium.Marker(
-            [lat, lng],
-            popup=f'{country}'
+            [marker['lat'], marker['lng']],
+            popup=f"{marker['country']}"
         ).add_to(marker_cluster)
+
+    geojson_file = os.path.join(os.path.dirname(__file__), 'static/data/world_countries.json')
+    with open(geojson_file, 'r', encoding='utf-8') as f:
+        geojson_data = json.load(f)
+
+    folium.GeoJson(
+        geojson_data,
+        name='geojson'
+    ).add_to(marker_cluster)
 
     map_html = world_map._repr_html_()
 
-    return records, country_percentages, map_html
+    return records, country_percentages, map_html, marker_data

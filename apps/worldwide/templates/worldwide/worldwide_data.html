@@ -4,6 +4,20 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Document</title>
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+<!-- Leaflet MarkerCluster CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css" />
+
+<!-- Leaflet MarkerCluster JS -->
+<script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
+
+
   <link rel="stylesheet" href="{{ url_for('worldwide.static', filename='css/worldwide.css') }}">
 
 </head>
@@ -35,7 +49,7 @@
       <article class="country-list">
         <ul>
             {% for record in records %}
-            <li data-country="{{ record[0].country }}">
+            <li data-country="{{ record[0].country }}" data-lat="{{ record[2].country_lat }}" data-lng="{{ record[2].country_long }}">
                 <p>
                     <strong>{{ record[1].country_korean }}</strong>
                     <span class="country-english">{{ record[0].country }}</span>
@@ -124,8 +138,8 @@
 
       <!-- 지도 -->
       <article class="covid-map">
-        <div id="map-container" style="height: 400px;">
-            {{ map_html|safe }}
+        <div id="map-container" style="height: 400px;"   data-marker="{{ marker_data | tojson }}"></div>>
+            
         </div>
     </article>
 
@@ -157,6 +171,9 @@
     </section>
   </main>
 
+  <script>
+   window.markerData = {{ marker_data | tojson }};  // JavaScript 전역 변수로 전달
+</script>
   <script src="https://kit.fontawesome.com/c0680c70ea.js" crossorigin="anonymous"></script>
   <script src="{{ url_for('worldwide.static', filename='js/worldwide.js') }}"></script>
 </body>

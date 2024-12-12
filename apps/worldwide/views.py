@@ -14,12 +14,13 @@ worldwide_bp = Blueprint(
 
 @worldwide_bp.route('/')
 def worldwide_data():
-    records, country_percentages, map_html = get_covid_map_and_data()
+    records, country_percentages, map_html,marker_data = get_covid_map_and_data()
     return render_template(
         'worldwide/worldwide_data.html',
         map_html=map_html,
         records=records,
-        country_percentages=country_percentages
+        country_percentages=country_percentages,
+        marker_data = marker_data
     )
 
 @worldwide_bp.route('/covid-data/<date_type>', methods=['GET'])
