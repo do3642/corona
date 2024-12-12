@@ -8,10 +8,17 @@ class WhoData(db.Model):
     country_code = db.Column(db.String(10), index=True, nullable=True)  # 국가 코드 (ISO 3자리)
     country = db.Column(db.String(255), nullable=False)  # 국가명
     who_region = db.Column(db.String(50), nullable=True)  # WHO 지역
+
     new_cases = db.Column(db.Integer, nullable=True)  # 신규 확진자 수
     cumulative_cases = db.Column(db.Integer, nullable=True)  # 누적 확진자 수
+    
+    new_recoveries = db.Column(db.Integer, nullable=True)  # 신규 완치자 수
+    cumulative_recoveries = db.Column(db.Integer, nullable=True)  # 누적 완치자 수
+
     new_deaths = db.Column(db.Integer, nullable=True)  # 신규 사망자 수
     cumulative_deaths = db.Column(db.Integer, nullable=True)  # 누적 사망자 수
+
+
 
 class CountryTranslation(db.Model):
     __tablename__ = 'country_translation'

@@ -29,13 +29,15 @@ def get_covid_data_for_date(date_type):
     # 어제 ,오늘 ,내일 선택하는 카테고리가 있는데 그거에 맞게끔 전날과 비교해서 증가,감소량을 파악하기 위함
     covid_data_today = db.session.query(
         db.func.sum(WhoData.new_cases).label('total_new_cases_today'),
-        db.func.sum(WhoData.new_deaths).label('total_new_deaths_today')
+        db.func.sum(WhoData.new_deaths).label('total_new_deaths_today'),
+        db.func.sum(WhoData.new_recoveries).label('total_new_recoveries_today')  # 신규 완치자
     ).filter(WhoData.date_reported == date).first()
 
     yesterday = date - timedelta(days=1)
     covid_data_yesterday = db.session.query(
         db.func.sum(WhoData.new_cases).label('total_new_cases_yesterday'),
-        db.func.sum(WhoData.new_deaths).label('total_new_deaths_yesterday')
+        db.func.sum(WhoData.new_deaths).label('total_new_deaths_yesterday'),
+        db.func.sum(WhoData.new_recoveries).label('total_new_recoveries_yesterday')  # 신규 완치자
     ).filter(WhoData.date_reported == yesterday).first()
 
     if not covid_data_today:
@@ -44,13 +46,15 @@ def get_covid_data_for_date(date_type):
     # 데이터가 튜플형태로 담겨있어서 따로 분리시켜줌 값이없으면 0 예외처리
     total_new_cases_today = covid_data_today.total_new_cases_today or 0
     total_new_deaths_today = covid_data_today.total_new_deaths_today or 0
+    total_new_recoveries_today = covid_data_today.total_new_recoveries_today or 0  # 신규 완치자
     total_new_cases_yesterday = covid_data_yesterday.total_new_cases_yesterday or 0
     total_new_deaths_yesterday = covid_data_yesterday.total_new_deaths_yesterday or 0
+    total_new_recoveries_yesterday = covid_data_yesterday.total_new_recoveries_yesterday or 0  # 신규 완치자
 
     # 전날과 오늘을 비교하여 증가,감소량 계산
     new_cases_change = total_new_cases_today - total_new_cases_yesterday
     new_deaths_change = total_new_deaths_today - total_new_deaths_yesterday
-
+    new_recoveries_change = total_new_recoveries_today - total_new_recoveries_yesterday
     # 해당하는 날짜의 모든 국가들이 가지고 있는 누적확진자를 합산함 (전세계 누적 확진자,사망자)
     # scalar을 쓰는 이유는 안쓰면 튜플에 있는값을 한번 더 꺼내야함
     total_cases = db.session.query(

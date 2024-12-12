@@ -21,6 +21,10 @@ def insert_data_to_db():
         cumulative_cases = int(row['Cumulative_cases']) if not pd.isna(row['Cumulative_cases']) else 0
         new_deaths = int(row['New_deaths']) if not pd.isna(row['New_deaths']) else 0
         cumulative_deaths = int(row['Cumulative_deaths']) if not pd.isna(row['Cumulative_deaths']) else 0
+
+        # 신규 완치자 및 누적 완치자 추가
+        new_recoveries = int(row['New_Recoveries']) if not pd.isna(row['New_Recoveries']) else 0
+        cumulative_recoveries = int(row['Cumulative_Recoveries']) if not pd.isna(row['Cumulative_Recoveries']) else 0
         
         country_code = row['Country_code'] if not pd.isna(row['Country_code']) else 'Unknown'
         country = row['Country'] if not pd.isna(row['Country']) else 'Unknown'
@@ -38,6 +42,8 @@ def insert_data_to_db():
             existing_record.cumulative_cases = cumulative_cases
             existing_record.new_deaths = new_deaths
             existing_record.cumulative_deaths = cumulative_deaths
+            existing_record.new_recoveries = new_recoveries  # 신규 완치자 업데이트
+            existing_record.cumulative_recoveries = cumulative_recoveries  # 누적 완치자 업데이트
         else:
             # 새로 데이터를 삽입
             bulk_data.append(
@@ -49,7 +55,9 @@ def insert_data_to_db():
                     new_cases=new_cases,
                     cumulative_cases=cumulative_cases,
                     new_deaths=new_deaths,
-                    cumulative_deaths=cumulative_deaths
+                    cumulative_deaths=cumulative_deaths,
+                    new_recoveries=new_recoveries,  # 신규 완치자
+                    cumulative_recoveries=cumulative_recoveries  # 누적 완치자
                 )
             )
 

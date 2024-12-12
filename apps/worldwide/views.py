@@ -14,14 +14,18 @@ worldwide_bp = Blueprint(
 
 @worldwide_bp.route('/')
 def worldwide_data():
-    records, country_percentages, map_html,marker_data = get_covid_map_and_data()
+    records, country_percentages, map_html, _ = get_covid_map_and_data()
     return render_template(
         'worldwide/worldwide_data.html',
         map_html=map_html,
         records=records,
         country_percentages=country_percentages,
-        marker_data = marker_data
+
     )
+@worldwide_bp.route('/request/marker-data')
+def api_marker_data():
+    _, _, _, marker_data = get_covid_map_and_data()  # marker_data만 반환
+    return jsonify(marker_data)
 
 @worldwide_bp.route('/covid-data/<date_type>', methods=['GET'])
 def get_covid_data(date_type):

@@ -138,9 +138,7 @@
 
       <!-- 지도 -->
       <article class="covid-map">
-        <div id="map-container" style="height: 400px;"   data-marker="{{ marker_data | tojson }}"></div>>
-            
-        </div>
+        <div id="map-container" style="height: 400px;"></div>
     </article>
 
       <!-- 그래프 -->
@@ -171,9 +169,7 @@
     </section>
   </main>
 
-  <script>
-   window.markerData = {{ marker_data | tojson }};  // JavaScript 전역 변수로 전달
-</script>
+
   <script src="https://kit.fontawesome.com/c0680c70ea.js" crossorigin="anonymous"></script>
   <script src="{{ url_for('worldwide.static', filename='js/worldwide.js') }}"></script>
 </body>
