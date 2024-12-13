@@ -1,5 +1,7 @@
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, redirect
 import folium
+import requests
+from bs4 import BeautifulSoup
 
 bp = Blueprint(
   "domestic",
@@ -16,3 +18,20 @@ def index():
   map_html = map._repr_html_()
 
   return render_template('domestic/index.html', map_html = map_html)
+
+
+@bp.route('/crawling')
+def crawling():
+  response = requests.get(f'https://search.naver.com/search.naver?sm=tab_hty.top&where=news&ssc=tab.news.all&query=코로나')
+
+  html = response.text
+  soup = BeautifulSoup(html, 'html.parser')
+
+  links = soup.select(".news_tit")
+  articles = []
+  for link in links[:5]:
+    title = link.text
+    url = link.attrs['href']
+    articles.append({'title': title, 'url': url})
+
+  return render_template('domestic/index.html', articles=articles)

@@ -46,6 +46,18 @@
     </div>
     <canvas id="chart-age" width="850px" height="500px"></canvas>
   </article>
+
+  <article id="domestic_covid_news">
+    <ul>
+      {% for article in articles %}
+      <li>
+        <a href="{{ article.url }}" target="_blank">{{ article.title }}</a>
+      </li>
+      {% endfor %}
+    </ul>
+
+  </article>
+
 {% endblock %}
 
 {% block script %}
