@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, redirect
+from flask import Blueprint, render_template, redirect, url_for, session
 import folium
 import requests
 from bs4 import BeautifulSoup
@@ -17,11 +17,7 @@ def index():
   
   map_html = map._repr_html_()
 
-  return render_template('domestic/index.html', map_html = map_html)
-
-
-@bp.route('/crawling')
-def crawling():
+  # 코로나 관련 기사 크롤링
   response = requests.get(f'https://search.naver.com/search.naver?sm=tab_hty.top&where=news&ssc=tab.news.all&query=코로나')
 
   html = response.text
@@ -29,9 +25,10 @@ def crawling():
 
   links = soup.select(".news_tit")
   articles = []
+
   for link in links[:5]:
     title = link.text
     url = link.attrs['href']
     articles.append({'title': title, 'url': url})
 
-  return render_template('domestic/index.html', articles=articles)
+  return render_template('domestic/index.html', map_html = map_html, articles = articles)
