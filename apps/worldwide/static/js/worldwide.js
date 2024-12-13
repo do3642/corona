@@ -13,8 +13,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const elementsToLoad = [
       '.new-cases',
       '.new-cases-change',
-      '.new-recovered',
-      '.new-recovered-change',
+      '.new-recoveries',
+      '.new-recoveries-change',
       '.new-deaths',
       '.new-deaths-change'
     ];
@@ -65,10 +65,10 @@ async function fetchCovidData(dateType) {
 function updateCovidData(data) {
   const fields = [
     { selector: '.new-cases', value: data.new_cases, change: data.new_cases_change },
-    { selector: '.new-recovered', value: 0, change: 0 },
+    { selector: '.new-recoveries', value: data.new_recoveries, change: data.new_recoveries_change },
     { selector: '.new-deaths', value: data.new_deaths, change: data.new_deaths_change },
     { selector: '.total-cases', value: data.total_cases, change: data.total_cases_change },
-    { selector: '.total-recovered', value: data.total_recovered, change: data.total_recovered_change },
+    { selector: '.total-recoveries', value: data.total_recoveries, change: data.total_recoveries_change },
     { selector: '.total-deaths', value: data.total_deaths, change: data.total_deaths_change },
   ];
 
@@ -82,11 +82,19 @@ function updateCovidData(data) {
 function updateChange(selector, value) {
   const element = document.querySelector(selector);
   const number = Number(value);
-  const isPositiveOrZero = number >= 0;
 
-  element.textContent = `(${Math.abs(number).toLocaleString()}${isPositiveOrZero ? ' ▲' : ' ▼'})`;
-  element.classList.toggle('plus', isPositiveOrZero);
-  element.classList.toggle('minus', !isPositiveOrZero);
+  // 0인 경우에는 변동 없음
+  if (number === 0) {
+    element.textContent = `(변동 없음)`;  // 0일 때 표시할 텍스트
+    element.classList.add('zero');  // zero 클래스 추가
+    element.classList.remove('plus', 'minus');  // plus, minus 클래스 제거
+  } else {
+    const isPositiveOrZero = number > 0;  // 양수일 경우 plus 클래스, 음수일 경우 minus 클래스
+    element.textContent = `(${Math.abs(number).toLocaleString()}${isPositiveOrZero ? ' ▲' : ' ▼'})`;
+    element.classList.toggle('plus', isPositiveOrZero);  // 양수일 경우 plus 클래스 추가
+    element.classList.toggle('minus', !isPositiveOrZero);  // 음수일 경우 minus 클래스 추가
+    element.classList.remove('zero');  // zero 클래스 제거
+  }
 }
 
 
@@ -246,3 +254,66 @@ document.addEventListener('DOMContentLoaded', function () {
     })
     .catch(error => console.error("Error fetching marker data:", error));
 });
+
+
+
+
+// 그래프
+const graph = () => {
+  const countryListItems = document.querySelectorAll('.country-list li');
+  let pieChart;
+  countryListItems.forEach(item => {
+    item.addEventListener('click', (e) => {
+      // 클릭된 li 태그에서 data-country 값을 가져옴
+      const country = e.target.closest('li').getAttribute('data-country');
+      
+      // GET 요청으로 데이터 전송
+      fetch(`/worldwide/get-daily-data?country=${country}`, {
+        method: 'GET',
+      })
+      .then(response => response.json())  // 응답을 JSON 형식으로 파싱
+      .then(data => {
+        // 원형 그래프 그리기
+        // 그래프가 이미 존재한다면 삭제
+        if (pieChart) {
+          pieChart.destroy();
+        }
+        const ctx = document.getElementById('pieChart').getContext('2d');
+          
+        pieChart = new Chart(ctx, {
+          type: 'pie', // 원형 그래프
+          data: {
+            labels: ['확진자', '완치자', '사망자'],
+            datasets: [{
+              label: 'COVID-19 Data',
+              data: [data.new_cases, data.new_recoveries, data.new_deaths], // 가져온 데이터
+              backgroundColor: ['#FF5733', '#33FF57', '#3357FF'], // 색상
+              borderColor: ['#C70039', '#28B463', '#1F77B4'],
+              borderWidth: 1
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: {
+                position: 'top',
+              },
+              tooltip: {
+                callbacks: {
+                  label: function(tooltipItem) {
+                    return tooltipItem.label + ': ' + tooltipItem.raw;
+                  }
+                }
+              }
+            }
+          }
+        });
+      })
+      .catch(error => {
+        console.error('Error:', error);
+      });
+    });
+  });
+};
+
+graph();

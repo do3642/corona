@@ -10,76 +10,41 @@ from apps.worldwide.models import WhoData, CountryTranslation,WorldLatLong
 from apps.app import db
 
 
+def get_total_data_for_date(date):
+    return {
+        "new_cases": db.session.query(db.func.sum(db.func.coalesce(WhoData.new_cases, 0))).filter(WhoData.date_reported == date).scalar() or 0,
+        "new_deaths": db.session.query(db.func.sum(db.func.coalesce(WhoData.new_deaths, 0))).filter(WhoData.date_reported == date).scalar() or 0,
+        "new_recoveries": db.session.query(db.func.sum(db.func.coalesce(WhoData.new_recoveries, 0))).filter(WhoData.date_reported == date).scalar() or 0,
+        "cumulative_cases": db.session.query(db.func.sum(WhoData.cumulative_cases)).filter(WhoData.date_reported == date).scalar() or 0,
+        "cumulative_recoveries": db.session.query(db.func.sum(WhoData.cumulative_recoveries)).filter(WhoData.date_reported == date).scalar() or 0,
+        "cumulative_deaths": db.session.query(db.func.sum(WhoData.cumulative_deaths)).filter(WhoData.date_reported == date).scalar() or 0
+    }
+
 def get_covid_data_for_date(date_type):
-    # 데이터 타입은 셀렉트 박스에서 클릭한 value
     current_date = datetime.datetime.now().date()
     two_years_ago = current_date - datetime.timedelta(days=365 * 2 + 180)
-    
-    # 2년6개월 전을 오늘로 기본세팅
-    today = two_years_ago
-    if date_type == "yesterday":
-        date = today - timedelta(days=1)
-    elif date_type == "tomorrow":
-        date = today + timedelta(days=1)
-    else:  
-        date = today
+    today = two_years_ago if date_type == "today" else (two_years_ago - timedelta(days=1) if date_type == "yesterday" else two_years_ago + timedelta(days=1))
 
-    # 해당 날짜에 해당하는 전체확진자,전체사망자 뽑아옴
-    # 한번에 두개 다 뽑는 이유는
-    # 어제 ,오늘 ,내일 선택하는 카테고리가 있는데 그거에 맞게끔 전날과 비교해서 증가,감소량을 파악하기 위함
-    covid_data_today = db.session.query(
-        db.func.sum(WhoData.new_cases).label('total_new_cases_today'),
-        db.func.sum(WhoData.new_deaths).label('total_new_deaths_today'),
-        db.func.sum(WhoData.new_recoveries).label('total_new_recoveries_today')  # 신규 완치자
-    ).filter(WhoData.date_reported == date).first()
+    covid_data_today = get_total_data_for_date(today)
+    covid_data_yesterday = get_total_data_for_date(today - timedelta(days=1))
 
-    yesterday = date - timedelta(days=1)
-    covid_data_yesterday = db.session.query(
-        db.func.sum(WhoData.new_cases).label('total_new_cases_yesterday'),
-        db.func.sum(WhoData.new_deaths).label('total_new_deaths_yesterday'),
-        db.func.sum(WhoData.new_recoveries).label('total_new_recoveries_yesterday')  # 신규 완치자
-    ).filter(WhoData.date_reported == yesterday).first()
+    new_cases_change = covid_data_today["new_cases"] - covid_data_yesterday["new_cases"]
+    new_deaths_change = covid_data_today["new_deaths"] - covid_data_yesterday["new_deaths"]
+    new_recoveries_change = covid_data_today["new_recoveries"] - covid_data_yesterday["new_recoveries"]
 
-    if not covid_data_today:
-        return {"error": "No data found for the selected date."}, 404
-
-    # 데이터가 튜플형태로 담겨있어서 따로 분리시켜줌 값이없으면 0 예외처리
-    total_new_cases_today = covid_data_today.total_new_cases_today or 0
-    total_new_deaths_today = covid_data_today.total_new_deaths_today or 0
-    total_new_recoveries_today = covid_data_today.total_new_recoveries_today or 0  # 신규 완치자
-    total_new_cases_yesterday = covid_data_yesterday.total_new_cases_yesterday or 0
-    total_new_deaths_yesterday = covid_data_yesterday.total_new_deaths_yesterday or 0
-    total_new_recoveries_yesterday = covid_data_yesterday.total_new_recoveries_yesterday or 0  # 신규 완치자
-
-    # 전날과 오늘을 비교하여 증가,감소량 계산
-    new_cases_change = total_new_cases_today - total_new_cases_yesterday
-    new_deaths_change = total_new_deaths_today - total_new_deaths_yesterday
-    new_recoveries_change = total_new_recoveries_today - total_new_recoveries_yesterday
-    # 해당하는 날짜의 모든 국가들이 가지고 있는 누적확진자를 합산함 (전세계 누적 확진자,사망자)
-    # scalar을 쓰는 이유는 안쓰면 튜플에 있는값을 한번 더 꺼내야함
-    total_cases = db.session.query(
-        db.func.sum(WhoData.cumulative_cases).label('total_cumulative_cases')
-    ).filter(WhoData.date_reported == date).scalar()
-
-    total_deaths = db.session.query(
-        db.func.sum(WhoData.cumulative_deaths).label('total_cumulative_deaths')
-    ).filter(WhoData.date_reported == date).scalar()
-
-    # 완치자는 데이터 세팅이 안돼서 기본 0
-    total_recovered = 0
-
-    # 딕셔너리 형태 키/밸류로 반환
     return {
-        "new_cases": total_new_cases_today,
+        "new_cases": covid_data_today["new_cases"],
         "new_cases_change": new_cases_change,
-        "new_deaths": total_new_deaths_today,
+        "new_recoveries": covid_data_today["new_recoveries"],
+        "new_recoveries_change": new_recoveries_change,
+        "new_deaths": covid_data_today["new_deaths"],
         "new_deaths_change": new_deaths_change,
-        "total_cases": total_cases,
-        "total_cases_change": total_new_cases_today,
-        "total_recovered": total_recovered,
-        "total_recovered_change": 0,
-        "total_deaths": total_deaths,
-        "total_deaths_change": total_new_deaths_today
+        "total_cases": covid_data_today["cumulative_cases"],
+        "total_cases_change": covid_data_today["new_cases"],
+        "total_recoveries": covid_data_today["cumulative_recoveries"],
+        "total_recoveries_change": covid_data_today["new_recoveries"],
+        "total_deaths": covid_data_today["cumulative_deaths"],
+        "total_deaths_change": covid_data_today["new_deaths"]
     }
 
 
@@ -123,27 +88,7 @@ def get_covid_map_and_data():
             'country': country
         })
 
-    # 폴리움 지도 생성
-    start_coords = [20, 0]
-    world_map = folium.Map(location=start_coords, zoom_start=2)
 
-    marker_cluster = MarkerCluster().add_to(world_map)
+  
 
-    for marker in marker_data:
-        folium.Marker(
-            [marker['lat'], marker['lng']],
-            popup=f"{marker['country']}"
-        ).add_to(marker_cluster)
-
-    geojson_file = os.path.join(os.path.dirname(__file__), 'static/data/world_countries.json')
-    with open(geojson_file, 'r', encoding='utf-8') as f:
-        geojson_data = json.load(f)
-
-    folium.GeoJson(
-        geojson_data,
-        name='geojson'
-    ).add_to(marker_cluster)
-
-    map_html = world_map._repr_html_()
-
-    return records, country_percentages, map_html, marker_data
+    return records, country_percentages, marker_data

@@ -16,7 +16,8 @@
 
 <!-- Leaflet MarkerCluster JS -->
 <script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
-
+<!-- Chart Js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <link rel="stylesheet" href="{{ url_for('worldwide.static', filename='css/worldwide.css') }}">
 
@@ -97,13 +98,13 @@
             <div class="daily-covid-box">
               <div>
                 <p>확진자</p>
-                <p class="new-cases">1,450,604 명</p>
-                <p class="new-cases-change">( 500,403 ▲)</p>
+                <p class="new-cases">로딩중</p>
+                <p class="new-cases-change"></p>
               </div>
               <div>
                 <p>완치자</p>
-                <p class="new-recovered">1,450,604 명</p>
-                <p class="new-recovered-change">( 500,403 ▲)</p>
+                <p class="new-recoveries">1,450,604 명</p>
+                <p class="new-recoveries-change">( 500,403 ▲)</p>
               </div>
               <div>
                 <p>사망자</p>
@@ -124,8 +125,8 @@
                 <span class="total-cases-change">(500,405 ▲)</span>
               </div>
               <div class="data-row">
-                <span class="total-recovered">12,506,402 명</span>
-                <span class="total-recovered-change">(20,405 ▼)</span>
+                <span class="total-recoveries">12,506,402 명</span>
+                <span class="total-recoveries-change">(20,405 ▼)</span>
               </div>
               <div class="data-row">
                 <span class="total-deaths">500,402명</span>
@@ -149,9 +150,52 @@
           <button>점선 그래프</button>
         </div>
         <div class="graph-views">
-          <div class="graph-view">그래프영역1</div>
-          <div class="graph-view">그래프영역2</div>
-          <div class="graph-view">그래프영역3</div>
+          <div class="graph-view">
+            <div class="graph-left">
+              <h4>일간</h4>
+              <p>확진자</p>
+              <p>xxx명</p>
+              <p>완치자</p>
+              <p>x명</p>
+              <p>사망자</p>
+              <p>x명</p>
+            </div>
+            <div class="graph-right">
+              그래프있는곳
+              <canvas id="pieChart"></canvas>
+            </div>
+          </div>
+          <div class="graph-view">
+            <div class="graph-left">
+              <h4>주간</h4>
+              <p>확진자</p>
+              <p>xxx명</p>
+              <p>완치자</p>
+              <p>x명</p>
+              <p>사망자</p>
+              <p>x명</p>
+            </div>
+            <div class="graph-right">
+              그래프있는곳
+              <canvas></canvas>
+            </div>
+          </div>
+          <div class="graph-view">
+            <div class="graph-left">
+              <h4>월간</h4>
+              <p>확진자</p>
+              <p>xxx명</p>
+              <p>완치자</p>
+              <p>x명</p>
+              <p>사망자</p>
+              <p>x명</p>
+            </div>
+            <div class="graph-right">
+              그래프있는곳
+              <canvas></canvas>
+            </div>
+          </div>
+
         </div>
       </article>
     </section>
