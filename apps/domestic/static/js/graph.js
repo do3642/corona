@@ -1,4 +1,4 @@
-let chartInstance=null;
+let chartInstances={};
 document.addEventListener("DOMContentLoaded", () => {
   // 처음 들어갔을 때 화면에 뿌려줄 데이터들만 반복을 돌리면서 createChart 함수에 넣어줌.
   const graphConfigs = [
@@ -30,7 +30,12 @@ document.addEventListener("DOMContentLoaded", () => {
     changeChart(canvasId, button);
   })
 
+  document.querySelector("#graph3 div").addEventListener("click", (event) => {
+    const canvasId = "chart-age";
+    const button = event.target;
 
+    changeChart(canvasId, button);
+  })
   
 });
 
@@ -42,8 +47,8 @@ function changeChart(canvasId, button) {
     fetch(`/api/graph/${graphId}`)
       .then(response => response.json())
       .then(data => {
-        if (chartInstance) {
-          chartInstance.destroy();
+        if (chartInstances[canvasId]) {
+          chartInstances[canvasId].destroy();
         }
         createChart(canvasId, data);
       })
@@ -54,7 +59,8 @@ function changeChart(canvasId, button) {
 // 위에서 데이터를 받아 데이터마다 다른 그래프가 나올 수 있도록 함.
 function createChart(canvasId, data) {
   const ctx = document.getElementById(canvasId).getContext("2d");
-  chartInstance = new Chart(ctx, {
+
+  chartInstances[canvasId] = new Chart(ctx, {
     type: data.type,
     data: {
       labels: data.labels,
