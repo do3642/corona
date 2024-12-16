@@ -125,3 +125,24 @@
   width: 200px;
   height: 50px;
 }
+
+#domestic_covid_news {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+}
+
+#domestic_covid_news ul{
+  list-style: none;
+}
+
+#domestic_covid_news li a {
+  text-decoration: none;
+  color: black;
+  font-size: 20px;
+}
+
+#domestic_covid_news a:visited {
+  color: black;
+}
