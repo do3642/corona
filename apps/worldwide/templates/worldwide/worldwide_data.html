@@ -51,36 +51,32 @@
       <!-- 나라 리스트 -->
       <article class="country-list">
         <ul>
-            {% for record in records %}
-            <li data-country="{{ record[0].country }}" data-lat="{{ record[2].country_lat }}" data-lng="{{ record[2].country_long }}">
-                <p>
-                    <strong>{{ record[1].country_korean }}</strong>
-                    <span class="country-english">{{ record[0].country }}</span>
-                    {% set country_percentage = country_percentages | selectattr('country', 'equalto', record[0].country) | list %}
-                    {% if country_percentage %}
-                        <span>| 일일 감염비율 <span>{{ country_percentage[0].percentage }}%</span></span>
-                    {% else %}
-                        <span>| 일일 감염비율 <span>0%</span></span>
-                    {% endif %}
-                </p>
-                <p>
-                    <strong>일간현황</strong>
-                    <span>
-                        <strong>{{ "{:,}".format(record[0].new_cases | int) }}</strong>
-                        <small>| {{ "{:,}".format(record[0].new_deaths | int) }}</small>
-                    </span>
-                </p>
-                <p>
-                    <strong>누적현황</strong>
-                    <span>
-                        <strong>{{ "{:,}".format(record[0].cumulative_cases | int) }}</strong>
-                        <small>| {{ "{:,}".format(record[0].cumulative_deaths | int) }}</small>
-                    </span>
-                </p>
-            </li>
-            {% endfor %}
+          {% for record in records %}
+          <li data-country="{{ record[0].country }}" data-lat="{{ record[2].country_lat }}" data-lng="{{ record[2].country_long }}">
+            <p class="country-name">
+              <strong>{{ record[1].country_korean }}</strong>
+              <span class="country-english">{{ record[0].country }}</span>
+            </p>
+            <p class="infection-rate">
+              <strong>일일 감염비율</strong> 
+              {% set country_percentage = country_percentages | selectattr('country', 'equalto', record[0].country) | list %}
+              {% if country_percentage %}
+              <span>{{ country_percentage[0].percentage if country_percentage else 0 }}%</span>
+              {% endif %}
+            </p>
+            <p class="daily-status">
+              <strong>일간현황</strong>
+              <span><strong>{{ "{:,}".format(record[0].new_cases | int) }}</strong> | {{ "{:,}".format(record[0].new_deaths | int) }}</span>
+            </p>
+            <p class="cumulative-status">
+              <strong>누적현황</strong>
+              <span><strong>{{ "{:,}".format(record[0].cumulative_cases | int) }}</strong> | {{ "{:,}".format(record[0].cumulative_deaths | int) }}</span>
+            </p>
+          </li>
+          {% endfor %}
         </ul>
-    </article>
+      </article>
+
     </section>
 
 <!-- ---------------------------------------------- -->
@@ -105,13 +101,13 @@
               </div>
               <div>
                 <p>완치자</p>
-                <p class="new-recoveries">1,450,604 명</p>
-                <p class="new-recoveries-change">( 500,403 ▲)</p>
+                <p class="new-recoveries">로딩중</p>
+                <p class="new-recoveries-change"></p>
               </div>
               <div>
                 <p>사망자</p>
-                <p class="new-deaths">1,450,604 명</p>
-                <p class="new-deaths-change">( 500,403 ▲)</p>
+                <p class="new-deaths">로딩중</p>
+                <p class="new-deaths-change">　</p>
               </div>
             </div>
           </div>
