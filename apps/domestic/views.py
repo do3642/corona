@@ -36,7 +36,8 @@ def index():
                  fill_color = 'YlOrBr',
                  fill_opacity=0.7,
                  line_opacity=0.4,
-                 legend_name='지역별 코로나 발생률(인구 10만명당, 명)'
+                 legend_name='지역별 코로나 발생률(인구 10만명당, 명)',
+                 highlight=False
                  ).add_to(map)
   
   # 누적 확진자랑 사망자 데이터를 json 파일에 추가
@@ -48,6 +49,16 @@ def index():
     else:
       feature['properties']['confirmed'] = '데이터 없음'
       feature['properties']['deaths'] = '데이터 없음'
+
+  # 클릭 했을 때 나타나는 검정색 네모 없애주는 css
+  map.get_root().html.add_child(folium.Element("""
+  <style>
+      .leaflet-interactive {
+          outline: none !important;
+      }
+  </style>
+  """))
+
   
   # GeoJson에서 툴팁 기능 추가
   folium.GeoJson(
@@ -55,12 +66,14 @@ def index():
     name='지역별 데이터',
     style_function=lambda feature: {
         'weight': 0.1,
-        'color': 'black',
+        'color': 'transparent',
     },
     highlight_function=lambda feature: {
         'weight': 1,
         'fillOpacity': 0.4,
+        'color': 'transparent',
     },
+    popup=None,
     tooltip=folium.features.GeoJsonTooltip(
         fields=['CTP_KOR_NM', 'confirmed', 'deaths'],  # 표시할 데이터
         aliases=['지역 이름:', '누적 확진자:', '누적 사망자:'],  # 레이블
@@ -71,7 +84,7 @@ def index():
   ).add_to(map)
 
   map_html = map._repr_html_()
-  
+
 
   # 코로나 관련 기사 크롤링
   response = requests.get(f'https://search.naver.com/search.naver?sm=tab_hty.top&where=news&ssc=tab.news.all&query=코로나')
@@ -88,3 +101,4 @@ def index():
     articles.append({'title': title, 'url': url})
 
   return render_template('domestic/index.html', map_html = map_html, articles = articles)
+
