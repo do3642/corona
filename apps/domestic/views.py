@@ -39,22 +39,15 @@ def index():
                  legend_name='지역별 코로나 발생률(인구 10만명당, 명)'
                  ).add_to(map)
   
-  # 추가정보를 나타내기 위한 툴팁 설정
-  def tooltip_function(region_name):
+  # 누적 확진자랑 사망자 데이터를 json 파일에 추가
+  for feature in geo_str['features']:
+    region_name = feature['properties']['CTP_KOR_NM']
     if region_name in df_total.index:
-     confirmed = int(df_total.loc[region_name, '누적확진자(명)'])
-     deaths = int(df_total.loc[region_name, '누적사망자(명)'])
+      feature['properties']['confirmed'] = int(df_total.loc[region_name, '누적확진자(명)'])
+      feature['properties']['deaths'] = int(df_total.loc[region_name, '누적사망자(명)'])
     else:
-     confirmed = '데이터 없음'
-     deaths = '데이터 없음'
-
-    return f""""
-    <div>
-      <b>{region_name}</b><br>
-      누적 확진자: {confirmed}<br>
-      누적 사망자: {deaths}
-    </div>
-    """
+      feature['properties']['confirmed'] = '데이터 없음'
+      feature['properties']['deaths'] = '데이터 없음'
   
   # GeoJson에서 툴팁 기능 추가
   folium.GeoJson(
@@ -66,24 +59,19 @@ def index():
     },
     highlight_function=lambda feature: {
         'weight': 1,
-        'fillOpacity': 0.3,
+        'fillOpacity': 0.4,
     },
     tooltip=folium.features.GeoJsonTooltip(
-        fields=['CTP_KOR_NM'],  # JSON 데이터의 key
-        aliases=['지역 이름:'],  # 툴팁 레이블
+        fields=['CTP_KOR_NM', 'confirmed', 'deaths'],  # 표시할 데이터
+        aliases=['지역 이름:', '누적 확진자:', '누적 사망자:'],  # 레이블
         localize=True,
         labels=True,
         sticky=True
-    ),
-    popup=folium.Popup(  # 마우스 클릭 시 팝업 표시
-        html=lambda feature: tooltip_function(feature),
-        max_width=300
     )
   ).add_to(map)
 
-
-
   map_html = map._repr_html_()
+  
 
   # 코로나 관련 기사 크롤링
   response = requests.get(f'https://search.naver.com/search.naver?sm=tab_hty.top&where=news&ssc=tab.news.all&query=코로나')
