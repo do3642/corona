@@ -18,6 +18,8 @@
 <script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
 <!-- Chart Js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- Chart.js DataLabels Plugin -->
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
 
   <link rel="stylesheet" href="{{ url_for('worldwide.static', filename='css/worldwide.css') }}">
 
@@ -153,50 +155,45 @@
           <div class="graph-view">
             <div class="graph-left">
               <h4>일간</h4>
-              <p>확진자</p>
-              <p>xxx명</p>
-              <p>완치자</p>
-              <p>x명</p>
-              <p>사망자</p>
-              <p>x명</p>
+              <div class="graph-details">
+                <p>확진자 <span id="daily-cases">xxx명</span></p>
+                <p>완치자 <span id="daily-recoveries">x명</span></p>
+                <p>사망자 <span id="daily-deaths">x명</span></p>
+              </div>
             </div>
             <div class="graph-right">
-              그래프있는곳
-              <canvas id="pieChart"></canvas>
+              <canvas id="dailyChart"></canvas>
             </div>
           </div>
           <div class="graph-view">
             <div class="graph-left">
               <h4>주간</h4>
-              <p>확진자</p>
-              <p>xxx명</p>
-              <p>완치자</p>
-              <p>x명</p>
-              <p>사망자</p>
-              <p>x명</p>
+              <div class="graph-details">
+                <p>확진자 <span id="weekly-cases">xxx명</span></p>
+                <p>완치자 <span id="weekly-recoveries">x명</span></p>
+                <p>사망자 <span id="weekly-deaths">x명</span></p>
+              </div>
             </div>
             <div class="graph-right">
-              그래프있는곳
-              <canvas></canvas>
+              <canvas id="weeklyChart"></canvas>
             </div>
           </div>
           <div class="graph-view">
             <div class="graph-left">
               <h4>월간</h4>
-              <p>확진자</p>
-              <p>xxx명</p>
-              <p>완치자</p>
-              <p>x명</p>
-              <p>사망자</p>
-              <p>x명</p>
+              <div class="graph-details">
+                <p>확진자 <span id="monthly-cases">xxx명</span></p>
+                <p>완치자 <span id="monthly-recoveries">x명</span></p>
+                <p>사망자 <span id="monthly-deaths">x명</span></p>
+              </div>
             </div>
             <div class="graph-right">
-              그래프있는곳
-              <canvas></canvas>
+              <canvas id="monthlyChart"></canvas>
             </div>
           </div>
         </div>
       </article>
+
 
     </section>
 

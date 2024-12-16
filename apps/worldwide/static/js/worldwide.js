@@ -277,9 +277,12 @@ const graph = () => {
       const { new_cases, new_recoveries, new_deaths } = data[period];
 
       // 데이터 렌더링
-      const sanitizedData = [new_cases, new_recoveries, new_deaths].map(value => value === 0 ? 0.1 : value);
+      const sanitizedData = [new_cases, new_recoveries, new_deaths].map(value => {
+        // 값이 숫자 타입으로 강제 변환되도록 함
+        value = Number(value);
+        return value === 0 ? 0.1 : value;
+      });
       const total = sanitizedData.reduce((sum, val) => sum + val, 0);
-
       graphView.querySelector('.graph-left').innerHTML = `
         <h4>${period === 'daily' ? '일간' : period === 'weekly' ? '주간' : '월간'}</h4>
         <p>확진자</p>
@@ -300,7 +303,7 @@ const graph = () => {
             {
               label: `${period} COVID-19 Data`,
               data: sanitizedData,
-              backgroundColor: ['#ef476f', '#118ab2', '#073b4c'], // 색상 변경
+              backgroundColor: ['#ef476f', '#118ab2', '#073b4c'], // 각 구역에 색상 적용
               borderColor: ['#F3722C', '#43AA8B', '#4D908E'],
               borderWidth: 2,
             }
@@ -319,12 +322,28 @@ const graph = () => {
                   return tooltipItem.label + ': ' + (originalValue === 0.1 ? 0 : originalValue.toLocaleString());
                 }
               }
+            },
+            // datalabels 플러그인 적용
+            datalabels: {
+              formatter: (value, context) => {
+                const percentage = ((value / total) * 100).toFixed(1); // 비율 계산
+                return `${percentage}%`; // 데이터 값과 비율 표시
+              },
+              color: (context) => {
+                return (chartType === 'line' || chartType === 'bar') ? '#000' : '#fff';
+              },
+              font: {
+                weight: 'bold',
+                size: 14
+              },
+              padding: 5,
             }
           },
           layout: {
             padding: 10
           }
-        }
+        },
+        plugins: [ChartDataLabels] // datalabels 플러그인 사용 명시
       });
 
       pieCharts.push(chart); // 그래프 저장
