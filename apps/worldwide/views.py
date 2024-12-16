@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, jsonify,request
 import datetime
 
-from apps.worldwide.covid_utils import get_covid_data_for_date, get_covid_map_and_data
+from apps.worldwide.covid_utils import get_covid_data_for_date, get_covid_map_and_data, fetch_data_by_period
 from apps.worldwide.insertData import insert_data_to_db
 from apps.worldwide.insertCountryTranslations import insert_country_translations
 from apps.worldwide.insertLatLong import insert_data_to_db_Lat_Long
@@ -45,38 +45,28 @@ def get_covid_data(date_type):
 @worldwide_bp.route('/get-daily-data', methods=['GET'])
 def get_daily_data():
     country = request.args.get('country')  # URL 쿼리 파라미터에서 'country' 값을 가져옴
-    print(country)
-    current_date = datetime.datetime.now().date()
-    two_years_ago = current_date - datetime.timedelta(days=365 * 2 + 180)
+    if not country:
+        return jsonify({"error": "Country parameter is required"}), 400
 
-    # 데이터 조회
-    data = db.session.query(
-        WhoData.new_cases,
-        WhoData.new_recoveries,
-        WhoData.new_deaths
-    ).filter(
-        WhoData.date_reported == two_years_ago, 
-        WhoData.country == country
-    ).first()
-    
-    print(data)
+    try:
+        # 일간, 주간, 월간 데이터 조회
+        daily_data = fetch_data_by_period(country, 'daily')
+        weekly_data = fetch_data_by_period(country, 'weekly')
+        monthly_data = fetch_data_by_period(country, 'monthly')
 
-    # Row 객체를 딕셔너리로 변환
-    if data:
-        data_dict = {
-            "new_cases": data.new_cases,
-            "new_recoveries": data.new_recoveries,
-            "new_deaths": data.new_deaths
+        # 모든 데이터를 합쳐서 반환
+        response_data = {
+            "daily": daily_data,
+            "weekly": weekly_data,
+            "monthly": monthly_data
         }
-    else:
-        data_dict = {
-            "new_cases": 0,
-            "new_recoveries": 0,
-            "new_deaths": 0
-        }
-    print(data_dict)
 
-    return jsonify(data_dict)  # JSON 형태로 응답 반환
+        return jsonify(response_data), 200
+
+    except Exception as e:
+        print(f"Error fetching data: {e}")
+        return jsonify({"error": "An error occurred while fetching data"}), 500
+
 
 
 # 데이터 삽입 라우트

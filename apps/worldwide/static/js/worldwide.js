@@ -258,62 +258,126 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
 
-// 그래프
 const graph = () => {
   const countryListItems = document.querySelectorAll('.country-list li');
-  let pieChart;
-  countryListItems.forEach(item => {
-    item.addEventListener('click', (e) => {
-      // 클릭된 li 태그에서 data-country 값을 가져옴
-      const country = e.target.closest('li').getAttribute('data-country');
-      
-      // GET 요청으로 데이터 전송
-      fetch(`/worldwide/get-daily-data?country=${country}`, {
-        method: 'GET',
-      })
-      .then(response => response.json())  // 응답을 JSON 형식으로 파싱
-      .then(data => {
-        // 원형 그래프 그리기
-        // 그래프가 이미 존재한다면 삭제
-        if (pieChart) {
-          pieChart.destroy();
-        }
-        const ctx = document.getElementById('pieChart').getContext('2d');
-          
-        pieChart = new Chart(ctx, {
-          type: 'pie', // 원형 그래프
-          data: {
-            labels: ['확진자', '완치자', '사망자'],
-            datasets: [{
-              label: 'COVID-19 Data',
-              data: [data.new_cases, data.new_recoveries, data.new_deaths], // 가져온 데이터
-              backgroundColor: ['#FF5733', '#33FF57', '#3357FF'], // 색상
-              borderColor: ['#C70039', '#28B463', '#1F77B4'],
-              borderWidth: 1
-            }]
-          },
-          options: {
-            responsive: true,
-            plugins: {
-              legend: {
-                position: 'top',
-              },
-              tooltip: {
-                callbacks: {
-                  label: function(tooltipItem) {
-                    return tooltipItem.label + ': ' + tooltipItem.raw;
-                  }
+  const graphViews = document.querySelectorAll('.graph-view');
+  let pieCharts = []; // 각 기간에 대해 별도 그래프 저장
+  let chartType = 'pie'; // 초기 그래프 타입 설정 (원형 그래프)
+
+  // 그래프 생성 함수
+  const createCharts = (country, data) => {
+    // 그래프 초기화
+    pieCharts.forEach(chart => chart.destroy());
+    pieCharts = [];
+
+    // 그래프 데이터를 렌더링
+    const periods = ['daily', 'weekly', 'monthly'];
+    periods.forEach((period, index) => {
+      const graphView = graphViews[index];
+      const { new_cases, new_recoveries, new_deaths } = data[period];
+
+      // 데이터 렌더링
+      const sanitizedData = [new_cases, new_recoveries, new_deaths].map(value => value === 0 ? 0.1 : value);
+      const total = sanitizedData.reduce((sum, val) => sum + val, 0);
+
+      graphView.querySelector('.graph-left').innerHTML = `
+        <h4>${period === 'daily' ? '일간' : period === 'weekly' ? '주간' : '월간'}</h4>
+        <p>확진자</p>
+        <p>${new_cases.toLocaleString()}명</p>
+        <p>완치자</p>
+        <p>${new_recoveries.toLocaleString()}명</p>
+        <p>사망자</p>
+        <p>${new_deaths.toLocaleString()}명</p>
+      `;
+
+      // 그래프 생성
+      const ctx = graphView.querySelector('canvas').getContext('2d');
+      const chart = new Chart(ctx, {
+        type: chartType, // 동적으로 그래프 타입 설정
+        data: {
+          labels: ['확진자', '완치자', '사망자'],
+          datasets: [
+            {
+              label: `${period} COVID-19 Data`,
+              data: sanitizedData,
+              backgroundColor: ['#ef476f', '#118ab2', '#073b4c'], // 색상 변경
+              borderColor: ['#F3722C', '#43AA8B', '#4D908E'],
+              borderWidth: 2,
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              position: 'top',
+            },
+            tooltip: {
+              callbacks: {
+                label: function (tooltipItem) {
+                  const originalValue = tooltipItem.raw; // 실제 값
+                  return tooltipItem.label + ': ' + (originalValue === 0.1 ? 0 : originalValue.toLocaleString());
                 }
               }
             }
+          },
+          layout: {
+            padding: 10
           }
-        });
+        }
+      });
+
+      pieCharts.push(chart); // 그래프 저장
+    });
+  };
+
+  // 국가 데이터 가져오기
+  const fetchDataAndRender = (country) => {
+    fetch(`/worldwide/get-daily-data?country=${country}`)
+      .then(response => response.json())
+      .then(data => {
+        createCharts(country, data); // 그래프와 데이터 렌더링
       })
       .catch(error => {
-        console.error('Error:', error);
+        console.error('Error fetching data:', error);
       });
+  };
+
+  // 국가 목록 클릭 이벤트
+  countryListItems.forEach(item => {
+    item.addEventListener('click', (e) => {
+      const country = e.target.closest('li').getAttribute('data-country');
+
+      // 선택된 상태 표시
+      countryListItems.forEach(el => el.classList.remove('selected'));
+      e.target.closest('li').classList.add('selected');
+
+      // 데이터 가져와 렌더링
+      fetchDataAndRender(country);
     });
   });
+
+  // 그래프 타입 변경 함수
+  const changeGraphType = (type) => {
+    chartType = type;
+    // 그래프 타입 변경 후 다시 그래프 렌더링
+    const selectedCountry = document.querySelector('.country-list .selected').getAttribute('data-country');
+    fetchDataAndRender(selectedCountry);
+  };
+
+  // 버튼 클릭 이벤트 리스너
+  document.getElementById('pieGraphBtn').addEventListener('click', () => changeGraphType('pie'));
+  document.getElementById('barGraphBtn').addEventListener('click', () => changeGraphType('bar'));
+  document.getElementById('lineGraphBtn').addEventListener('click', () => changeGraphType('line'));
+
+  // 초기 화면 설정
+  const defaultCountry = 'Republic of Korea';
+  const defaultItem = Array.from(countryListItems).find(item => item.getAttribute('data-country') === defaultCountry);
+  if (defaultItem) {
+    defaultItem.classList.add('selected'); // 선택 상태 표시
+    fetchDataAndRender(defaultCountry); // 초기 데이터 렌더링
+  }
 };
 
 graph();
+

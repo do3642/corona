@@ -1,10 +1,7 @@
 from datetime import timedelta
 import datetime
-import folium
 from folium.plugins import MarkerCluster
-import json
-import os
-
+from sqlalchemy import func
 
 from apps.worldwide.models import WhoData, CountryTranslation,WorldLatLong
 from apps.app import db
@@ -92,3 +89,48 @@ def get_covid_map_and_data():
   
 
     return records, country_percentages, marker_data
+
+
+def get_date_range(period):
+    """
+    기간(period)에 따라 시작일을 계산
+    :param period: 'daily', 'weekly', 'monthly'
+    :return: 시작일과 종료일 (start_date, end_date)
+    """
+    current_date = datetime.datetime.now().date() - datetime.timedelta(days=365 * 2 + 180)
+    if period == 'daily':
+        return current_date, current_date
+    elif period == 'weekly':
+        start_date = current_date - datetime.timedelta(days=7)
+        return start_date, current_date
+    elif period == 'monthly':
+        start_date = current_date - datetime.timedelta(days=30)
+        return start_date, current_date
+    else:
+        raise ValueError("Invalid period specified. Use 'daily', 'weekly', or 'monthly'.")
+
+def fetch_data_by_period(country, period):
+    """
+    특정 기간(period)의 데이터를 조회
+    :param country: 국가 이름
+    :param period: 'daily', 'weekly', 'monthly'
+    :return: 해당 기간의 데이터 딕셔너리
+    """
+    start_date, end_date = get_date_range(period)
+    
+    # 기간별 데이터 조회
+    query = db.session.query(
+        func.sum(WhoData.new_cases).label('new_cases'),
+        func.sum(WhoData.new_recoveries).label('new_recoveries'),
+        func.sum(WhoData.new_deaths).label('new_deaths')
+    ).filter(
+        WhoData.date_reported.between(start_date, end_date),
+        WhoData.country == country
+    ).first()
+
+    # 데이터가 없으면 0으로 반환
+    return {
+        "new_cases": query.new_cases or 0,
+        "new_recoveries": query.new_recoveries or 0,
+        "new_deaths": query.new_deaths or 0
+    }
