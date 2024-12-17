@@ -559,14 +559,16 @@ main{
   border-radius: 15px;
   display: flex;
   justify-content: space-around;
+  align-items: center;
 }
 .graph-left{
-  width: 30%;
+  width: 50%;
   padding-left: 10px;
   padding-top: 10px;
+  padding-bottom: 10px;
 }
 .graph-left h4{
-  font-size: 1.5em;
+  font-size: 1.3em;
   margin-bottom: 10px;
   font-family: 'GmarketSansMedium';
 }
@@ -576,16 +578,26 @@ main{
   font-family: 'Pretendard-Regular';
 }
 .graph-details p:nth-of-type(even){
-  background-color: #ef476f;
   text-align: center;
   padding: 10px;
+  border-radius: 7px;
+  color: #fff;
+}
+.graph-details p:nth-of-type(2){
+  background-color: #ef476f;
+}
+.graph-details p:nth-of-type(4){
+  background-color: #118ab2;
+}
+.graph-details p:nth-of-type(6){
+  background-color: #073b4c;
 }
 
 .graph-right{
   width: 100%;
 
 }
-#dailyChart{
+#dailyChart,#weeklyChart,#monthlyChart{
   width: 100%;
 }
 
