@@ -292,6 +292,7 @@ const graph = () => {
     periods.forEach((period, index) => {
       const graphView = graphViews[index];
       const { new_cases, new_recoveries, new_deaths } = data[period];
+      
 
       // 데이터 렌더링
       const sanitizedData = [new_cases, new_recoveries, new_deaths].map(value => {
@@ -304,20 +305,34 @@ const graph = () => {
         <h4>${period === 'daily' ? '일간' : period === 'weekly' ? '주간' : '월간'}</h4>
         <div class="graph-details">
         <p>확진자</p>
-        <p>${new_cases.toLocaleString()}명</p>
+        <p>${parseInt(new_cases, 10).toLocaleString()}명</p>
         <p>완치자</p>
-        <p>${new_recoveries.toLocaleString()}명</p>
+        <p>${parseInt(new_recoveries, 10).toLocaleString()}명</p>
         <p>사망자</p>
-        <p>${new_deaths.toLocaleString()}명</p>
+        <p>${parseInt(new_deaths, 10).toLocaleString()}명</p>
         </div>
       `;
 
       // 그래프 생성
       const ctx = graphView.querySelector('canvas').getContext('2d');
+      const chartLabels = chartType === 'pie' ? [] : ['확진자', '완치자', '사망자'];
+      const chartCanvas = graphView.querySelector('canvas');
+        if (chartType === 'pie') {
+          chartCanvas.width = 250; // 실제 크기
+          chartCanvas.height = 150;
+          chartCanvas.style.width = '250px'; // 시각적 크기
+          chartCanvas.style.height = '150px';
+        } else {
+          chartCanvas.width = 250;
+          chartCanvas.height = 250;
+          chartCanvas.style.width = '250px';
+          chartCanvas.style.height = '250px';
+        }
+
       const chart = new Chart(ctx, {
         type: chartType, // 동적으로 그래프 타입 설정
         data: {
-          labels: ['확진자', '완치자', '사망자'],
+          labels: chartLabels,
           datasets: [
             {
               label: `${period} COVID-19 Data`,
@@ -330,6 +345,7 @@ const graph = () => {
         },
         options: {
           responsive: true,
+          // aspectRatio: chartType === 'pie' ? 1 : 2, // 파이 그래프는 1:1 비율, 나머지 그래프는 2:1 비율로 설정
           plugins: {
             legend: {
               position: 'top',

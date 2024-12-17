@@ -560,6 +560,7 @@ main{
   display: flex;
   justify-content: space-around;
   align-items: center;
+  background-color: #222;
 }
 .graph-left{
   width: 50%;
@@ -571,17 +572,22 @@ main{
   font-size: 1.3em;
   margin-bottom: 10px;
   font-family: 'GmarketSansMedium';
+  color: #fff;
 }
 
 
 .graph-left .graph-details p{
   font-family: 'Pretendard-Regular';
+  color: #fff;
+}
+.graph-details p:nth-of-type(odd){
+  margin-bottom: 5px;
 }
 .graph-details p:nth-of-type(even){
   text-align: center;
   padding: 10px;
   border-radius: 7px;
-  color: #fff;
+  margin-bottom: 10px;
 }
 .graph-details p:nth-of-type(2){
   background-color: #ef476f;
@@ -594,11 +600,13 @@ main{
 }
 
 .graph-right{
-  width: 100%;
 
 }
+.graph-right canvas{
+  /* width: 300px; */
+}
 #dailyChart,#weeklyChart,#monthlyChart{
-  width: 100%;
+  /* width: 100%; */
 }
 
 
