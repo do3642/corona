@@ -9,7 +9,7 @@ def create_app():
 
  # mysql 연결
   app.config.from_mapping(
-    SQLALCHEMY_DATABASE_URI='mysql+mysqlconnector://root:1234@localhost:3306/coronaMap',
+    SQLALCHEMY_DATABASE_URI='mysql+mysqlconnector://root:1234@localhost:3306/coronamap',
     # 변경사항 감지 막음
     SQLALCHEMY_TRACK_MODIFICATIONS = False,
 
