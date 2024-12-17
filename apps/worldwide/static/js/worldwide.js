@@ -1,7 +1,8 @@
 
+// 키워드: 전세계 일간현황, 최초 일간현황 데이터 삽입, 로딩svg삽입,셀렉트 항목 변경
 // 페이지 방문 시 작동할 기본세팅 (data불러오기)
 document.addEventListener('DOMContentLoaded', () => {
-  // 기본적으로 '오늘' 상태로 설정
+  // 셀렉트 박스 오늘로 설정 (html에서도 선택되어 있음)
   let selectedDateType = 'today';
 
   // 날짜 선택 박스 이벤트 리스너 추가
@@ -56,11 +57,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 초기 데이터 로드 (오늘 상태로)
   fetchCovidData(selectedDateType);
+
 });
 
 
 
-
+// 키워드: 전세계 일간현황, 어제,오늘,내일에 해당하는 데이터 비동기 요청
 // 서버에서 COVID-19 데이터를 가져오는 함수
 async function fetchCovidData(dateType) {
   try {
@@ -78,7 +80,34 @@ async function fetchCovidData(dateType) {
   }
 }
 
-// 데이터를 화면에 업데이트하는 함수
+// 키워드: 전세계 일간현황, 숫자 카운터 애니메이션 함수
+function animateCount(targetElement, start, end, callback) {
+  const randomDuration = Math.random() * 500 + 500; // 500ms ~ 1000ms 사이의 랜덤 지속 시간
+  const totalFrames = Math.ceil(randomDuration / 16); // 프레임 수 계산
+  let current = start;
+  let remainingFrames = totalFrames;
+
+  function stepCount() {
+    const randomIncrement = Math.ceil((end - current) / remainingFrames) + Math.floor(Math.random() * 5); 
+    current += randomIncrement;
+
+    if (current >= end) {
+      current = end; // 목표값 정확하게 도달
+      targetElement.textContent = `${current.toLocaleString()} 명`;
+      if (callback) callback(current); // 콜백 실행
+      return;
+    }
+
+    targetElement.textContent = `${current.toLocaleString()} 명`;
+    remainingFrames--;
+    requestAnimationFrame(stepCount);
+  }
+
+  stepCount();
+}
+
+
+//키워드: 전세계 일간현황, 데이터를 화면에 업데이트하는 함수
 function updateCovidData(data) {
   const fields = [
     { selector: '.new-cases', value: data.new_cases, change: data.new_cases_change },
@@ -90,11 +119,17 @@ function updateCovidData(data) {
   ];
 
   fields.forEach(field => {
-    document.querySelector(field.selector).textContent = `${Number(field.value).toLocaleString()} 명`;
+    // document.querySelector(field.selector).textContent = `${Number(field.value).toLocaleString()} 명`;
+    const targetElement = document.querySelector(field.selector);
+    animateCount(targetElement, 0, Number(field.value), (currentValue) => {
+      // 텍스트 업데이트는 애니메이션 중에 이루어짐
+      targetElement.textContent = `${currentValue.toLocaleString()} 명`;
+    });
     updateChange(`${field.selector}-change`, field.change);
   });
 }
 
+// 키워드: 전세계 일간현황, 증가,감소 텍스트 삽입
 // 값에 따라 포맷된 텍스트와 클래스 업데이트
 function updateChange(selector, value) {
   const element = document.querySelector(selector);
@@ -102,15 +137,23 @@ function updateChange(selector, value) {
 
   // 0인 경우에는 변동 없음
   if (number === 0) {
-    element.textContent = `(변동 없음)`;  // 0일 때 표시할 텍스트
-    element.classList.add('zero');  // zero 클래스 추가
-    element.classList.remove('plus', 'minus');  // plus, minus 클래스 제거
+    element.textContent = `(변동 없음)`; // 0일 때 표시할 텍스트
+    element.classList.add('zero'); // zero 클래스 추가
+    element.classList.remove('plus', 'minus'); // plus, minus 클래스 제거
   } else {
-    const isPositiveOrZero = number > 0;  // 양수일 경우 plus 클래스, 음수일 경우 minus 클래스
-    element.textContent = `(${Math.abs(number).toLocaleString()}${isPositiveOrZero ? ' ▲' : ' ▼'})`;
-    element.classList.toggle('plus', isPositiveOrZero);  // 양수일 경우 plus 클래스 추가
-    element.classList.toggle('minus', !isPositiveOrZero);  // 음수일 경우 minus 클래스 추가
-    element.classList.remove('zero');  // zero 클래스 제거
+    const isPositiveOrZero = number > 0; // 양수일 경우 plus 클래스, 음수일 경우 minus 클래스
+    const absoluteValue = Math.abs(number);
+
+    // 애니메이션 적용 (0부터 목표 숫자까지 카운트)
+    animateCount(element, 0, absoluteValue, (currentValue) => {
+      // 애니메이션 중에 값 업데이트
+      element.textContent = `(${currentValue.toLocaleString()}${isPositiveOrZero ? ' ▲' : ' ▼'})`;
+    });
+
+    // 클래스 토글
+    element.classList.toggle('plus', isPositiveOrZero);
+    element.classList.toggle('minus', !isPositiveOrZero);
+    element.classList.remove('zero'); // zero 클래스 제거
   }
 }
 
@@ -183,7 +226,7 @@ document.addEventListener('DOMContentLoaded', function () {
       // markerData를 사용하여 마커 추가
       markerData.forEach(marker => {
           L.marker([marker.lat, marker.lng])
-              .bindPopup(`<strong>${marker.country}</strong>`)
+              .bindPopup(`popupContent`)
               .addTo(markerCluster);
       });
 
@@ -199,7 +242,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     fillOpacity: 0.3,
                 },
                 onEachFeature: function (feature, layer) {
-                    const countryName = feature.properties.sovereignt || feature.properties.name;
+                    const countryName = feature.properties.name_ko || feature.properties.sovereignt || feature.properties.name;
                     layer.bindPopup(`<strong>${countryName}</strong>`);
                 },
             }).addTo(map);
@@ -455,7 +498,7 @@ function adjustMiddleContentHeight() {
 
   
   // 화면 전체 높이에서 헤더,일간현황,그래프의 높이를 뺀 값 계산
-  const availableHeight = window.innerHeight - nav.offsetHeight- dailyData.offsetHeight - graphData.offsetHeight - 25; // 50은 여유 마진값
+  const availableHeight = window.innerHeight - nav.offsetHeight - dailyData.offsetHeight - graphData.offsetHeight - 25; // 50은 여유 마진값
   const availableHeightLeft = window.innerHeight - nav.offsetHeight - updateBox.offsetHeight - searchBox.offsetHeight - 25;
   mapBox.style.height = `${availableHeight}px`;
   countryList.style.height = `${availableHeightLeft}px`;
