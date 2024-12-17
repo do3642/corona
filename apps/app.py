@@ -22,7 +22,11 @@ def create_app():
   
 
   from apps.worldwide import views as worldwide_views
+  from apps.domestic import views as domestic_views
+  from apps.domestic import data as domestic_data
 
   app.register_blueprint(worldwide_views.worldwide_bp, url_prefix='/worldwide')
+  app.register_blueprint(domestic_views.bp, url_prefix='/domestic')
+  app.register_blueprint(domestic_data.bp, url_prefix='/api/graph')
   
   return app

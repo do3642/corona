@@ -1,0 +1,38 @@
+{% extends "domestic/base.html" %}
+{% block css %}
+<link rel="stylesheet" href="{{ url_for('domestic.static', filename='css/area_style.css') }}">
+{% endblock %}
+
+{% block title %}
+{{ area }} 현황
+{% endblock %}
+
+{% block content %}
+
+<!-- <article id="graph4">
+
+</article> -->
+
+<h1>{{area}} 지역별 코로나19 확진자&사망자</h1>
+<table>
+  <tr>
+    <th>시군구</th>
+    <th>누적확진자(명)</th>
+    <th>누적사망자(명)</th>
+    <th>발생률<br>(인구10만명당, 명)</th>
+    <th>사망률<br>(인구10만명당, 명)</th>
+  </tr>
+  {% for row in area_info[area] %}
+  <tr>
+    <td>{{ row['시군구'] }}</td>
+    <td>{{ row['누적확진자(명)'] }}</td>
+    <td>{{ row['누적사망자(명)'] }}</td>
+    <td>{{ row['발생률\n(인구10만명당, 명)'] }}</td>
+    <td>{{ row['사망률\n(인구10만명당, 명)'] }}</td>
+  </tr>
+  {% endfor %}
+</table>
+{% endblock %}
+
+{% block script %}
+{% endblock %}

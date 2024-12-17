@@ -1,0 +1,69 @@
+{% extends "domestic/base.html" %}
+{% block css %}
+<link rel="stylesheet" href="{{ url_for('domestic.static', filename='css/index_style.css') }}">
+{% endblock %}
+
+{% block title %}
+국내 현황
+{% endblock %}
+
+{% block content %}
+<!-- 사이드바는 모든 차트들과 화면 다 구현 되면 그때 구현 할 예정 -->
+<!-- <div class="domestic_sidebar">
+      <ul class="domestic_sidebar_tag">
+        <li><a href="#graph1">지역별<br>발생률</a></li>
+        <li><a href="#">버튼1</a></li>
+        <li><a href="#">버튼1</a></li>
+        <li><a href="#">버튼1</a></li>
+        <a href="#" class="go-to-top">맨 위로</a>
+      </ul>
+    </div> -->
+    <h3>
+      아래 자료들은 모두 2023.08.31 0시 기준 질병관리청 질병보건 통합관리시스템에 신고된 코로나19 확진자 및 사망자에 대한 자료임.
+    </h3>
+
+    <article class="covid-domestic-map">
+      <div id="map" style="height: 500px; width: 1000px">
+        {{ map_html | safe }}
+      </div>
+    </article>
+
+    <article id="graph1">
+      <div>
+        <button data-graph="area_incidence">발병률</button>
+        <button data-graph="area_death">사망률</button>
+      </div>
+      <canvas id="chart-area" width="850px" height="500px"></canvas>
+    </article>
+  </section>
+
+  <article id="graph2">
+    <h1>완치자 데이터 가공 되면 완치율 그래프 들어갈 자리</h1>
+  </article>
+
+  <article id="graph3">
+    <div>
+      <button data-graph="age_incidence">발병률</button>
+      <button data-graph="case_death_rate">확진자 중 사망률</button>
+    </div>
+    <canvas id="chart-age" width="850px" height="500px"></canvas>
+  </article>
+
+  <article id="domestic_covid_news">
+    <ul>
+      {% for article in articles %}
+      <li>
+        <a href="{{ article.url }}" target="_blank">{{ article.title }}</a>
+      </li>
+      {% endfor %}
+    </ul>
+
+  </article>
+
+{% endblock %}
+
+{% block script %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="{{ url_for('domestic.static', filename='js/graph.js') }}"></script>
+{% endblock %}
