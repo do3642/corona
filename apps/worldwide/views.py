@@ -19,11 +19,23 @@ worldwide_bp = Blueprint(
 @worldwide_bp.route('/')
 def worldwide_data():
     records, country_percentages, _ = get_covid_map_and_data()
+    daily_classList = [
+        {'label': '확진자', 'className': 'new-cases'},
+        {'label': '완치자', 'className': 'new-recoveries'},
+        {'label': '사망자', 'className': 'new-deaths'}
+    ]
+    total_classList = [
+        {'className': 'total-cases'},
+        {'className': 'total-recoveries'},
+        {'className': 'total-deaths'}
+    ]
+    
     return render_template(
         'worldwide/worldwide_data.html',
         records=records,
         country_percentages=country_percentages,
-
+        daily_classList = daily_classList,
+        total_classList = total_classList
     )
 @worldwide_bp.route('/request/marker-data')
 def api_marker_data():
