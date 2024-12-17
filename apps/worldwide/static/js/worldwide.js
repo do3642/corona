@@ -365,11 +365,11 @@ const graph = () => {
                 return `${percentage}%`; // 데이터 값과 비율 표시
               },
               color: (context) => {
-                return (chartType === 'line' || chartType === 'bar') ? '#000' : '#fff';
+                return '#fff';
               },
               font: {
                 weight: 'bold',
-                size: 14
+                size: 14,
               },
               padding: 5,
             }
@@ -438,3 +438,33 @@ const graph = () => {
 
 graph();
 
+
+
+// 보는 화면에 맞게 지도크기 제어
+function adjustMiddleContentHeight() {
+  const mapBox = document.querySelector('#map-container');
+
+  const dailyData = document.querySelector('.world-wide-daily');
+  const nav = document.querySelector('nav');
+  const graphData = document.querySelector('.graph-box')
+
+  const countryList = document.querySelector('.country-list ul');
+
+  const updateBox = document.querySelector('.update-day');
+  const searchBox = document.querySelector('.search-box');
+
+  
+  // 화면 전체 높이에서 헤더,일간현황,그래프의 높이를 뺀 값 계산
+  const availableHeight = window.innerHeight - nav.offsetHeight- dailyData.offsetHeight - graphData.offsetHeight - 25; // 50은 여유 마진값
+  const availableHeightLeft = window.innerHeight - nav.offsetHeight - updateBox.offsetHeight - searchBox.offsetHeight - 25;
+  mapBox.style.height = `${availableHeight}px`;
+  countryList.style.height = `${availableHeightLeft}px`;
+
+
+
+
+}
+
+// 페이지 로드와 리사이즈 시 실행
+window.addEventListener('load', adjustMiddleContentHeight);
+window.addEventListener('resize', adjustMiddleContentHeight);
