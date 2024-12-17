@@ -27,7 +27,7 @@ def index():
   area_name = 'feature.properies.CTP_KOR_NM'
 
   # 지도가 전국이 다 보일 수 있도록 설정.
-  map = folium.Map( location=[35.75, 128.00025], zoom_start=6.9, tiles="CartoDB positron")
+  map = folium.Map( location=[35.75, 128.00025], zoom_start=6.9)
 
   # 지역별 코로나 발생률에 따라 지도에 색깔 구분
   folium.Choropleth(geo_data = geo_str,
