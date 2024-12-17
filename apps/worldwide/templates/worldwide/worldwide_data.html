@@ -98,7 +98,7 @@
             <div class="daily-covid-box">
               {% for classList in daily_classList %}
                 <div>
-                  <p>{{ classList.label }}</p>  <!-- 항목 이름 (확진자, 완치자, 사망자) -->
+                  <p>{{ classList.label }}</p> 
                   <p class="{{ classList.className }}">  
                     <!-- 애니메이션 SVG 로더 -->
                     <svg version="1.1" id="loader-1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
@@ -162,7 +162,7 @@
 
       <!-- 지도 -->
       <article class="covid-map">
-        <div id="map-container" style="height: 300px;"></div>
+        <div id="map-container"></div>
     </article>
 
       <!-- 그래프 -->

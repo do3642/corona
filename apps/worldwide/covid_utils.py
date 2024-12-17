@@ -79,10 +79,12 @@ def get_covid_map_and_data():
         lat = record[2].country_lat
         lng = record[2].country_long
         country = record[0].country
+        country_korean = record[1].country_korean
         marker_data.append({
             'lat': lat,
             'lng': lng,
-            'country': country
+            'country': country,
+            'country_korean' : country_korean
         })
 
 
