@@ -4,8 +4,244 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Document</title>
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+<!-- Leaflet MarkerCluster CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css" />
+
+<!-- Leaflet MarkerCluster JS -->
+<script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
+<!-- Chart Js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- Chart.js DataLabels Plugin -->
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+
+  <link rel="stylesheet" href="{{ url_for('worldwide.static', filename='css/worldwide.css') }}">
+
 </head>
 <body>
-  <h1>국외 페이지</h1>
+  <nav>
+    임시네비
+  </nav>
+  
+  <main>
+    <!-- 왼쪽 국가 리스트 -->
+    <section class="left-content">
+      <!-- 데이터 업데이트날짜 -->
+      <article class="update-day">
+        <p>최신 업데이트 날짜</p>
+        <p>{{records[0][0].date_reported}} 11:00</p>
+        <p>
+          <strong>확진자</strong>
+          <span>| 사망자</span>
+        </p>
+      </article>
+      
+      <!-- 검색창 부분 -->
+      <article class="search-box">
+        <input type="search" name="search" id="search-input" placeholder="국가명을 입력하세요">
+        <i class="fa-solid fa-magnifying-glass search-icon"></i>
+      </article>
+
+      <!-- 나라 리스트 -->
+      <article class="country-list">
+        <ul>
+          {% for record in records %}
+          <li data-country="{{ record[0].country }}" data-lat="{{ record[2].country_lat }}" data-lng="{{ record[2].country_long }}" class="">
+            <p class="country-name">
+              <strong>{{ record[1].country_korean }}</strong>
+              <span class="country-english">{{ record[0].country }}</span>
+            </p>
+            <p class="infection-rate">
+              <strong>일일 감염비율</strong> 
+              {% set country_percentage = country_percentages | selectattr('country', 'equalto', record[0].country) | list %}
+              {% if country_percentage %}
+              <span>{{ country_percentage[0].percentage if country_percentage else 0 }}%</span>
+              {% endif %}
+            </p>
+            <p class="daily-status">
+              <strong>일간현황</strong>
+              <span><strong>{{ "{:,}".format(record[0].new_cases | int) }}</strong> | {{ "{:,}".format(record[0].new_deaths | int) }}</span>
+            </p>
+            <p class="cumulative-status">
+              <strong>누적현황</strong>
+              <span><strong>{{ "{:,}".format(record[0].cumulative_cases | int) }}</strong> | {{ "{:,}".format(record[0].cumulative_deaths | int) }}</span>
+            </p>
+          </li>
+          {% endfor %}
+        </ul>
+      </article>
+
+    </section>
+
+<!-- ---------------------------------------------- -->
+
+    <!-- 가운데 국가 지도 -->
+    <section class="middle-content">
+      <!-- 상단 전세계 일간현황 -->
+      <article class="world-wide-daily">
+        <h2>전세계 일간 현황</h2>
+        <div class="world-count">
+          <div class="daily-covid">
+            <div class="select-wrapper">
+            <select id="date-select">
+              <option value="yesterday">어제</option>
+              <option value="today" selected>오늘</option>
+              <option value="tomorrow">내일(예측)</option>
+            </select>
+          </div>
+            <div class="daily-covid-box">
+              {% for classList in daily_classList %}
+                <div>
+                  <p>{{ classList.label }}</p>  <!-- 항목 이름 (확진자, 완치자, 사망자) -->
+                  <p class="{{ classList.className }}">  
+                    <!-- 애니메이션 SVG 로더 -->
+                    <svg version="1.1" id="loader-1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+                      width="42px" height="42px" viewBox="0 0 40 40" enable-background="new 0 0 40 40" xml:space="preserve">
+                      <path opacity="0.2" fill="#000" d="M20.201,5.169c-8.254,0-14.946,6.692-14.946,14.946c0,8.255,6.692,14.946,14.946,14.946
+                        s14.946-6.691,14.946-14.946C35.146,11.861,28.455,5.169,20.201,5.169z M20.201,31.749c-6.425,0-11.634-5.208-11.634-11.634
+                        c0-6.425,5.209-11.634,11.634-11.634c6.425,0,11.633,5.209,11.633,11.634C31.834,26.541,26.626,31.749,20.201,31.749z"/>
+                      <path fill="#000" d="M26.013,10.047l1.654-2.866c-2.198-1.272-4.743-2.012-7.466-2.012h0v3.312h0
+                        C22.32,8.481,24.301,9.057,26.013,10.047z">
+                        <animateTransform attributeType="xml"
+                          attributeName="transform"
+                          type="rotate"
+                          from="0 20 20"
+                          to="360 20 20"
+                          dur="0.5s"
+                          repeatCount="indefinite"/>
+                      </path>
+                    </svg>
+                  </p>
+                  <p class="{{ classList.className }}-change"></p>  <!-- 동적으로 업데이트될 값 -->
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+          <div class="all-day-covid">
+            <div class="column title-column">
+              <h3>총 확진자</h3>
+              <h3>총 완치자</h3>
+              <h3>총 사망자</h3>
+            </div>
+            <div class="column data-column">
+              {% for classList in total_classList %}
+                <div class="data-row">
+                  <span class="{{ classList.className }}">
+                    <!-- 애니메이션 SVG 로더 -->
+                    <svg version="1.1" id="loader-1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+                      width="30px" height="30px" viewBox="0 0 40 40" enable-background="new 0 0 40 40" xml:space="preserve">
+                      <path opacity="0.2" fill="#000" d="M20.201,5.169c-8.254,0-14.946,6.692-14.946,14.946c0,8.255,6.692,14.946,14.946,14.946
+                        s14.946-6.691,14.946-14.946C35.146,11.861,28.455,5.169,20.201,5.169z M20.201,31.749c-6.425,0-11.634-5.208-11.634-11.634
+                        c0-6.425,5.209-11.634,11.634-11.634c6.425,0,11.633,5.209,11.633,11.634C31.834,26.541,26.626,31.749,20.201,31.749z"/>
+                      <path fill="#000" d="M26.013,10.047l1.654-2.866c-2.198-1.272-4.743-2.012-7.466-2.012h0v3.312h0
+                        C22.32,8.481,24.301,9.057,26.013,10.047z">
+                        <animateTransform attributeType="xml"
+                          attributeName="transform"
+                          type="rotate"
+                          from="0 20 20"
+                          to="360 20 20"
+                          dur="0.5s"
+                          repeatCount="indefinite"/>
+                      </path>
+                    </svg>
+                  </span>
+                  <span class="{{ classList.className }}-change"></span>  <!-- 동적으로 업데이트될 값 -->
+                </div>
+              {% endfor %}
+            </div>
+            
+          </div>
+        </div>
+      </article>
+
+      <!-- 지도 -->
+      <article class="covid-map">
+        <div id="map-container" style="height: 300px;"></div>
+    </article>
+
+      <!-- 그래프 -->
+      <article class="graph-box">
+        <div class="graph-btn">
+          <button id="pieGraphBtn">원형 그래프</button>
+          <button id="barGraphBtn">막대 그래프</button>
+          <button id="lineGraphBtn">라인 그래프</button>
+        </div>
+        <div class="graph-views">
+          <div class="graph-view">
+            <div class="graph-left">
+              <h4>일간</h4>
+              <div class="graph-details">
+                <p>확진자</p>
+                <p>0명</p>
+                <p>완치자</p>
+                <p>0명</p>
+                <p>사망자</p>
+                <p>0명</p>
+              </div>
+            </div>
+            <div class="graph-right">
+              <canvas id="dailyChart"></canvas>
+            </div>
+          </div>
+          <div class="graph-view">
+            <div class="graph-left">
+              <h4>주간</h4>
+              <div class="graph-details">
+                <p>확진자</p>
+                <p>0명</p>
+                <p>완치자</p>
+                <p>0명</p>
+                <p>사망자</p>
+                <p>0명</p>
+              </div>
+            </div>
+            <div class="graph-right">
+              <canvas id="weeklyChart"></canvas>
+            </div>
+          </div>
+          <div class="graph-view">
+            <div class="graph-left">
+              <h4>월간</h4>
+              <div class="graph-details">
+                <p>확진자</p>
+                <p>0명</p>
+                <p>완치자</p>
+                <p>0명</p>
+                <p>사망자</p>
+                <p>0명</p>
+              </div>
+            </div>
+            <div class="graph-right">
+              <canvas id="monthlyChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </article>
+
+
+    </section>
+
+<!-- ---------------------------------------------- -->
+
+
+    <!-- 오른쪽 크롤링 뉴스-->
+    <section class="right-content">
+      <div class="right-tab-btn">
+        <div>관련 뉴스</div>
+        <div>기능 </div>
+      </div>
+      크롤링 영역입니다.
+    </section>
+  </main>
+
+
+  <script src="https://kit.fontawesome.com/c0680c70ea.js" crossorigin="anonymous"></script>
+  <script src="{{ url_for('worldwide.static', filename='js/worldwide.js') }}"></script>
 </body>
 </html>

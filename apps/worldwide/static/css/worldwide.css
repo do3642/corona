@@ -1,0 +1,623 @@
+@import url("common.css");
+
+
+nav{
+  height: 30px;
+  border: 1px solid #eee;
+}
+
+main{
+  display: flex !important;
+  margin-top: 10px;
+  gap: 5px;
+  
+}
+.left-content{
+  min-width: 300px;
+  max-width: 300px;
+  margin-left: 5px;
+}
+.middle-content{
+  width: 100%;
+}
+.right-content{
+  min-width: 400px;
+}
+
+/* 데이터 업데이트 날짜표기 */
+.update-day {
+  text-align: center;
+  padding: 10px;
+  border-radius: 15px;
+  background: linear-gradient(45deg, #1e1e1e, #333); /* 어두운 그라디언트 배경 */
+  color: #fff; /* 기본 글자 색상 */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5), 0 6px 20px rgba(0, 255, 255, 0.2); /* 부드러운 빛 효과 */
+  transition: 0.3s ease;
+}
+
+/* 호버 시 효과 */
+.update-day:hover {
+  transform: translateY(-5px) scale(1.05);
+  box-shadow: 0 10px 10px rgba(0, 0, 0, 0.6), 0 10px 30px rgba(0, 255, 255, 0.5); /* 강렬한 그림자와 빛 효과 */
+  background: linear-gradient(45deg, #333, #444); /* 어두운 배경의 변화 */
+}
+
+/* 텍스트 스타일 */
+.update-day > p {
+  font-family: 'Pretendard-Regular', sans-serif;
+}
+
+.update-day > p:nth-of-type(2) {
+  font-size: 1.2em;
+}
+
+.update-day > p strong {
+  color: #ff4d4d; /* 빨간색 */
+  font-family: inherit;
+  font-weight: bold; /* 글씨 굵기 설정 */
+}
+
+/* 기본 텍스트 */
+.update-day > p span {
+  font-family: inherit;
+  color: #fff; /* 기본 텍스트 색상 */
+}
+
+/* 검색창 */
+.search-box{
+  position: relative;
+  margin: 5px 0;
+}
+.search-box input{
+  outline: none;
+  width: 100%;
+  padding: 5px;
+  padding-left: 30px;
+  border-radius: 30px;
+  border: 2px solid transparent;
+  background-image: linear-gradient(white, white), linear-gradient(to right, #6a11cb, #2575fc);
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+  transition: background-size 0.3s;
+  background-size: 100% 100%;
+}
+.search-icon{
+  position: absolute; left: 0;top: 0;
+  transform: translate(50%,60%);
+}
+
+.search-box input::placeholder {
+  color: #aaa;
+  transition: color 0.3s ease;
+}
+.search-box input:hover {
+  background-size: 200% 100%;
+  transition: .3s ease;
+}
+.search-box input:hover::placeholder {
+  color: #666; /* 더 짙은 색상 */
+}
+.search-box:hover .search-icon{
+  transform: translate(50%, 60%) rotate(360deg);
+  transition: transform 0.5s ease;
+}
+
+
+
+/* 나라 리스트 */
+.country-list ul {
+  overflow-y: scroll;
+  max-height: calc(100vh - 200px);
+}
+
+.country-list ul li {
+  border: 1px solid #333;
+  padding: 20px 15px;
+  margin-bottom: 2px;
+  background: #222;
+  color: #fff;
+  border-radius: 10px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: .5s;
+  
+}
+
+.country-list ul li::before,
+.country-list ul li::after {
+  border: 0 solid transparent;
+  box-sizing: border-box;
+  content: '';
+  pointer-events: none;
+  position: absolute;
+  width: 0rem;
+  height: 0;
+  bottom: 0;
+  right: 0;
+}
+
+.country-list ul li::before {
+  border-bottom-width: 4px;
+  border-left-width: 4px;
+}
+
+.country-list ul li::after {
+  border-top-width: 4px;
+  border-right-width: 4px;
+}
+
+.country-list ul li:hover {
+  box-shadow: 0 0 10px rgba(0, 255, 153, 0.6), 0 0 20px rgba(255, 0, 204, 0.6), 0 0 30px rgba(102, 0, 255, 0.6);
+  
+}
+
+.country-list ul li:hover::before,
+.country-list ul li:hover::after {
+  border-color: #eb196e;
+  -webkit-transition: border-color 0s, width 0.25s, height 0.25s;
+  transition: border-color 0s, width 0.25s, height 0.25s;
+  width: 100%;
+  height: 100%;
+  border-radius: 8px;
+}
+
+.country-list ul li:hover::before {
+  -webkit-transition-delay: 0s, 0s, 0.25s;
+  transition-delay: 0s, 0s, 0.25s;
+}
+
+.country-list ul li:hover::after {
+  -webkit-transition-delay: 0s, 0.25s, 0s;
+  transition-delay: 0s, 0.25s, 0s;
+}
+.country-list ul li.active::after,
+.country-list ul li.active::before{
+  width: 100%;
+  height: 100%;
+  border-color: #eb196e;
+}
+.country-list ul li.active{
+  box-shadow: 0 0 10px rgba(0, 255, 153, 0.6), 0 0 20px rgba(255, 0, 204, 0.6), 0 0 30px rgba(102, 0, 255, 0.6);
+}
+
+
+/* 각 항목 스타일 */
+
+.country-list ul li p:nth-of-type(2n+1) {
+  margin-top: 5px;
+}
+.country-list ul li p:nth-of-type(3) {
+  margin-top: 15px;
+}
+.country-list > ul > li > p.infection-rate{
+  font-size: 0.8em;
+}
+.country-list ul li p strong {
+  font-size: 1em;
+  font-weight: bold;
+  font-family: inherit;
+}
+
+.country-list ul li p span {
+  font-size: 0.9em;
+  font-family: inherit;
+}
+
+.country-list ul li p.country-name {
+  font-size: 1em;
+  font-family: 'GmarketSansMedium';
+}
+
+
+.country-list ul li p.infection-rate span,
+.country-list ul li p.daily-status span strong,
+.country-list ul li p.cumulative-status span strong {
+  font-weight: bold;
+  color: #ff4d4d; /* 빨간색 */
+}
+
+.country-list ul li p.daily-status span,
+.country-list ul li p.cumulative-status span {
+  color: #fff;
+}
+
+/* 사이버펑크 스타일 스크롤바 */
+.country-list ul::-webkit-scrollbar {
+  width: 10px;
+}
+
+.country-list ul::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.country-list ul::-webkit-scrollbar-thumb {
+  background: linear-gradient(45deg, #00ff99, #ff00cc, #6600ff);
+  border-radius: 10px;
+  border: 2px solid #f1f1f1;
+  transition: background 0.3s ease, transform 0.2s ease;
+  box-shadow: 0 0 10px rgba(0, 255, 153, 0.6), 0 0 20px rgba(255, 0, 204, 0.6), 0 0 30px rgba(102, 0, 255, 0.6);
+}
+
+.country-list ul::-webkit-scrollbar-thumb:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 20px rgba(0, 255, 153, 1), 0 0 30px rgba(255, 0, 204, 1), 0 0 40px rgba(102, 0, 255, 1);
+}
+
+/* 숨김 처리된 항목 */
+.country-list li.hidden {
+  display: none; /* 해당 항목 숨기기 */
+}
+
+/* ------------------------------------- */
+
+/* 가운데 컨텐츠 */
+.middle-content{
+  
+}
+
+
+/* 전세계 일간현황 */
+.world-wide-daily{
+  background: #222;
+  border-radius: 15px;
+  padding: 10px;
+  margin-bottom: 5px;
+}
+.world-wide-daily h2{
+  font-size: 1.2em;
+  background: linear-gradient(to right, #d3d3d3, rgba(255, 255, 255, 0));
+  padding: 10px;
+  border-radius: 15px;
+  margin-bottom: 5px;
+  font-family: 'GmarketSansMedium';
+}
+
+.world-count{
+  display: flex;
+  gap:5px;
+}
+.daily-covid{
+  display: flex;
+  flex-direction: column;
+  flex: 2;
+}
+
+/* 셀렉트 박스 래퍼 스타일 */
+.select-wrapper {
+  position: relative; /* 가상 요소 위치 설정 */
+  width: 150px; /* 셀렉트 박스 너비 */
+}
+
+/* 셀렉트 박스 스타일 */
+#date-select {
+  appearance: none; /* 기본 화살표 제거 */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-color: #222;
+  color: #fff;
+  border: 2px solid #444;
+  border-radius: 8px;
+  padding: 5px 15px;
+  font-size: 1rem;
+  width: 100%;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+/* 폰트어썸 화살표 아이콘 스타일 */
+.select-wrapper::after {
+  content: "\f078"; /* Font Awesome 화살표 아이콘 (유니코드) */
+  font-family: "Font Awesome 5 Free";
+  font-weight: 900; /* 폰트어썸 solid 스타일 적용 */
+  position: absolute;
+  top: 50%;
+  right: 15px; /* 화살표 위치 */
+  transform: translateY(-50%);
+  pointer-events: none; /* 화살표 클릭 방지 */
+  color: #fff; /* 화살표 색상 */
+  font-size: 0.8rem;
+  transition: .3s;
+}
+
+/* hover 효과 */
+#date-select:hover {
+  border-color: #00ff99;
+  box-shadow: 0 0 10px rgba(0, 255, 153, 0.5);
+  transform: translateY(-5px) scale(1.05); 
+}
+.select-wrapper:hover::after{
+  top: 30%;
+}
+
+/* focus 효과 */
+#date-select:focus {
+  outline: none;
+  border-color: #00ff99;
+  box-shadow: 0 0 10px rgba(0, 255, 153, 0.7);
+}
+
+/* 드롭다운 옵션 스타일 */
+#date-select option {
+  background-color: #333; /* 옵션 배경색 */
+  color: #fff; /* 옵션 텍스트 색상 */
+  padding: 10px;
+}
+
+/* 선택된 옵션에 스타일 */
+#date-select option:checked {
+  background-color: #00ff99;
+  color: #222;
+}
+
+
+
+
+/* 전세계 일간현황 - 일일데이터 */
+.daily-covid-box{
+  display: flex;
+  width: 100%;
+  height: 100%;
+  gap: 5px;
+}
+.daily-covid-box div{
+  flex: 1; /* 각 항목이 동일한 비율로 공간을 차지하도록 설정 */
+  padding: 5px;
+  text-align: center;
+  border: 3px solid #ddd;
+  margin-top: 5px;
+  border-radius: 15px;
+  background-color: #fff;
+  transition: .3s ease-in-out;
+}
+.daily-covid-box div:hover {
+  transform: translateY(-5px) scale(1.05); /* 호버 시 카드 크기 확대 */
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1); /* 더 강렬한 그림자 */
+  border-color: #3498db; /* 테두리 색상 변경 */
+}
+.daily-covid-box div:nth-of-type(1):hover{
+  border-color: #ff4d4d;
+}
+.daily-covid-box div:nth-of-type(3):hover{
+  border-color: #eee;
+}
+.daily-covid-box div p{
+  font-family: 'Pretendard-Regular';
+  
+}
+
+.daily-covid-box div p:first-child{
+  color: #333;
+}
+.daily-covid-box div p:nth-of-type(2){
+  font-size: 1.3em;
+}
+.daily-covid-box div p:nth-of-type(3){}
+.plus{
+  color: #ff4d4d;
+}
+.minus{
+  color: #3498db;
+}
+
+/* 공통 로딩 클래스 */
+.loading {
+  font-size: 16px;
+  font-weight: bold;
+}
+
+
+
+
+/* 전세계 일간현황 -통계 */
+.all-day-covid{
+  flex: 1;
+  margin-left: auto;
+  display: flex;
+  border: 3px solid #eee;
+  background-color: #fff;
+  border-radius: 15px;
+  margin-top: 5px;
+  transition: .3s;
+}
+.all-day-covid:hover{
+  transform: translateY(-5px) scale(1.05); 
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1); 
+}
+.all-day-covid .title-column{
+  flex: 1;
+  text-align: center;
+}
+
+
+.all-day-covid .title-column h3{
+  font-family: 'GmarketSansMedium';
+}
+
+
+.title-column,.data-column{
+  display: flex;
+  flex-direction: column; /* 세로 방향으로 정렬 */
+  justify-content: space-evenly;
+}
+
+.all-day-covid .data-column{
+  flex:3;
+}
+.all-day-covid .data-column .data-row{
+  margin-left: 5px;
+}
+.all-day-covid .data-column .data-row *{
+  flex: 1;
+  flex-grow: 1;
+  font-family: 'Pretendard-Regular';
+  
+}
+
+
+/* ################# */
+/* 지도영역 */
+.covid-map{
+  position: relative;
+  overflow: hidden;
+}
+#map-container{
+  width: 100%;
+  height: 300px;
+  margin: auto;
+}
+
+
+/* ################# */
+
+
+/* 그래프 영역 */
+.graph-box{}
+.graph-btn{
+  display: flex;
+  gap:15px;
+  margin: 5px 0;
+}
+.graph-btn button {
+  border: none;
+  padding: 5px 15px;
+  border-radius: 7px;
+  background-color: #222;
+  color: #fff;
+  font-family: 'GmarketSansMedium', sans-serif;
+  font-size: 16px;
+  text-transform: uppercase;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+/* 버튼 hover 및 active 상태 */
+.graph-btn button:hover{
+  background-color: #1e1e1e;
+  box-shadow: 0 0 50px rgba(0, 255, 255, 0.3), 0 0 15px rgba(0, 255, 255, 0.3);
+  transform: scale(1.1);
+  transition: transform 0.2s ease-in-out;
+}
+
+/* 사이버펑크 스타일의 네온 효과 */
+.graph-btn button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(45deg, #00ff99, #ff007f, #00ccff, #ffcc00);
+  background-size: 300% 300%;
+  animation: gradient-animation 3s linear infinite;
+  z-index: -1;
+  filter: blur(10px);
+  opacity: 0.6;
+  border-radius: 7px;
+}
+
+/* hover 및 active 상태에서 효과 */
+.graph-btn button:hover::before,
+.graph-btn button:active::before {
+  animation: gradient-animation 1.5s linear infinite;
+}
+
+/* 그래디언트 애니메이션 */
+@keyframes gradient-animation {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* 클릭 시 텍스트 색상 변화 */
+.graph-btn button:active {
+  color: #ff00ff;
+}
+
+
+
+
+/* ------------ */
+.graph-views{
+  display: flex;
+  gap:10px
+
+}
+.graph-view{
+  flex: 1;
+  border: 1px solid #333;
+  border-radius: 15px;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+.graph-left{
+  width: 50%;
+  padding-left: 10px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+.graph-left h4{
+  font-size: 1.3em;
+  margin-bottom: 10px;
+  font-family: 'GmarketSansMedium';
+}
+
+
+.graph-left .graph-details p{
+  font-family: 'Pretendard-Regular';
+}
+.graph-details p:nth-of-type(even){
+  text-align: center;
+  padding: 10px;
+  border-radius: 7px;
+  color: #fff;
+}
+.graph-details p:nth-of-type(2){
+  background-color: #ef476f;
+}
+.graph-details p:nth-of-type(4){
+  background-color: #118ab2;
+}
+.graph-details p:nth-of-type(6){
+  background-color: #073b4c;
+}
+
+.graph-right{
+  width: 100%;
+
+}
+#dailyChart,#weeklyChart,#monthlyChart{
+  width: 100%;
+}
+
+
+/* ------------------------------------- */
+
+/* 우측 컨텐츠 */
+.right-content{
+  margin-right: 5px;
+  flex-grow: 1;
+  background-color: rgba(0,0,0,0.4);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.right-tab-btn{
+  display: flex;
+}
+.right-tab-btn div{
+  flex: 1;
+  text-align: center;
+  border: 1px solid #333;
+
+}
