@@ -105,5 +105,12 @@ def get_graph(graph_id):
 
     return jsonify(data)
   
+  # 지역별 시간에 따른 코로나 확진자 수
+  # elif graph_id == 'time_incidence':
+  #   df = sheet_data.get('시도별발생(17개시도+검역)')
+  #   time = df.query("일자 != '누적(명)'")
+
+  #   return jsonify(data)
+  
   else:
     return jsonify({"error": "해당 그래프ID는 존재하지 않는 그래프입니다."}), 404

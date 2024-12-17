@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template
 import folium
 import folium.features
+import folium.utilities
 import requests
 from bs4 import BeautifulSoup
 import json
@@ -26,7 +27,7 @@ def index():
   area_name = 'feature.properies.CTP_KOR_NM'
 
   # 지도가 전국이 다 보일 수 있도록 설정.
-  map = folium.Map( location=[36, 128.00025], zoom_start=7.25, tiles="CartoDB positron")
+  map = folium.Map( location=[35.75, 128.00025], zoom_start=6.9, tiles="CartoDB positron")
 
   # 지역별 코로나 발생률에 따라 지도에 색깔 구분
   folium.Choropleth(geo_data = geo_str,
@@ -59,6 +60,18 @@ def index():
   </style>
   """))
 
+  test = folium.utilities.JsCode("""
+  function(feature, layer) {
+      layer.on('click', function(e) {
+          let area = feature.properties.CTP_KOR_NM;
+          if (area) {
+              window.parent.location.href = '/domestic/' + encodeURIComponent(area);
+          }
+      });
+  }
+  """)
+
+
   
   # GeoJson에서 툴팁 기능 추가
   folium.GeoJson(
@@ -80,11 +93,11 @@ def index():
         localize=True,
         labels=True,
         sticky=True
-    )
+    ),
+    onEachFeature = test
   ).add_to(map)
-
+    
   map_html = map._repr_html_()
-
 
   # 코로나 관련 기사 크롤링
   response = requests.get(f'https://search.naver.com/search.naver?sm=tab_hty.top&where=news&ssc=tab.news.all&query=코로나')
@@ -100,5 +113,21 @@ def index():
     url = link.attrs['href']
     articles.append({'title': title, 'url': url})
 
-  return render_template('domestic/index.html', map_html = map_html, articles = articles)
+  return render_template('domestic/index.html', map_html = map_html , articles = articles)
 
+
+
+@bp.route('/<string:area>')
+def region(area):
+  # 해당 지역과 관련된 코로나 발생률과 사망률 데이터 뽑아옴.
+  area_data = sheet_data.get('시군구별(발생률,사망률)')
+  
+  filtered_data = area_data.query('시도명 == @area')
+  filtered_total = filtered_data.query("시군구!='합계'")
+  try: 
+    area_info = {area: filtered_total.to_dict(orient='records')}
+    print(area_info)
+  except KeyError:
+    return f"{area} 데이터가 없습니다.", 404
+  
+  return render_template('domestic/area_index.html', area=area, area_info=area_info)
