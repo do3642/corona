@@ -226,8 +226,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
       // markerData를 사용하여 마커 추가
       markerData.forEach(marker => {
+
           L.marker([marker.lat, marker.lng])
-              .bindPopup(`popupContent`)
+              .bindPopup(`<strong>${marker.country}</strong>`)
               .addTo(markerCluster);
       });
 
