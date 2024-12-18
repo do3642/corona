@@ -27,7 +27,45 @@
         {{ map_html | safe }}
       </div>
     </article>
+    {% if area %}
+    <article id="graph4">
+      <div>
+        <button data-graph="time_incidence">누적확진자</button>
+        <button data-graph="time_death">누적사망자</button>
+      </div>
+      <h1>시간별 확진자 & 사망자 그래프 들어갈 자리</h1>
+    </article>
 
+    <article id="table">
+      <h1>{{area}} 지역별 코로나19 확진자&사망자</h1>
+
+      <table>
+        <tr>
+          <th>시군구</th>
+          <th>누적확진자(명)</th>
+          <th>누적사망자(명)</th>
+          <th>발생률<br>(인구10만명당, 명)</th>
+          <th>사망률<br>(인구10만명당, 명)</th>
+        </tr>
+        {% for row in area_info[area] %}
+        <tr>
+          <td>{{ row['시군구'] }}</td>
+          <td>{{ row['누적확진자(명)'] }}</td>
+          <td>{{ row['누적사망자(명)'] }}</td>
+          <td>{{ row['발생률\n(인구10만명당, 명)'] }}</td>
+          <td>{{ row['사망률\n(인구10만명당, 명)'] }}</td>
+        </tr>
+        {% endfor %}
+      </table>
+
+    </article>
+
+    <article>
+      <h1>해당 지역의 보건소 위치를 표시하는 지도 들어갈 자리</h1>
+    </article>
+
+
+    {% else %}
     <article id="graph1">
       <div>
         <button data-graph="area_incidence">발병률</button>
@@ -35,19 +73,20 @@
       </div>
       <canvas id="chart-area" width="850px" height="500px"></canvas>
     </article>
-  </section>
 
-  <article id="graph2">
-    <h1>완치자 데이터 가공 되면 완치율 그래프 들어갈 자리</h1>
-  </article>
+    <article id="graph2">
+      <h1>완치자 데이터 가공 되면 완치율 그래프 들어갈 자리</h1>
+    </article>
 
-  <article id="graph3">
-    <div>
-      <button data-graph="age_incidence">발병률</button>
-      <button data-graph="case_death_rate">확진자 중 사망률</button>
-    </div>
-    <canvas id="chart-age" width="850px" height="500px"></canvas>
-  </article>
+    <article id="graph3">
+      <div>
+        <button data-graph="age_incidence">발병률</button>
+        <button data-graph="case_death_rate">확진자 중 사망률</button>
+      </div>
+      <canvas id="chart-age" width="850px" height="500px"></canvas>
+    </article>
+
+  {% endif %}
 
   <article id="domestic_covid_news">
     <ul>

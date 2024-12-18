@@ -15,16 +15,37 @@ bp = Blueprint(
   static_folder="static"
   )
 
+# 어떤 url에서든지 다 들어갈 자료들
+def common_data(area=None):
+  # 기사 크롤링
+  query = f"코로나+{area}" if area else '코로나'
+  response = requests.get(f'https://search.naver.com/search.naver?sm=tab_hty.top&where=news&ssc=tab.news.all&query={query}')
+
+  html = response.text
+  soup = BeautifulSoup(html, 'html.parser')
+
+  links = soup.select(".news_tit")
+  articles = []
+
+  for link in links[:5]:
+    title = link.text
+    url = link.attrs['href']
+    articles.append({'title': title, 'url': url})
+
+  return articles
+
+
 @bp.route('/')
 def index():
+  # 코로나 기사 크롤링
+  articles = common_data()
+
   area_sheet_data = sheet_data.get('시군구별(발생률,사망률)')
   df = area_sheet_data.set_index('시도명')
   df_total = df.query("시군구=='합계'")
 
   geo_path = 'apps/static/data/korea.json'
   geo_str = json.load(open(geo_path, encoding='utf-8'))
-
-  area_name = 'feature.properies.CTP_KOR_NM'
 
   # 지도가 전국이 다 보일 수 있도록 설정.
   map = folium.Map( location=[35.75, 128.00025], zoom_start=6.9)
@@ -60,6 +81,7 @@ def index():
   </style>
   """))
 
+  # 지도에서 특정 지역을 클릭했을 때 해당 지역의 이름이 들어간 url로 바뀜
   test = folium.utilities.JsCode("""
   function(feature, layer) {
       layer.on('click', function(e) {
@@ -99,26 +121,15 @@ def index():
     
   map_html = map._repr_html_()
 
-  # 코로나 관련 기사 크롤링
-  response = requests.get(f'https://search.naver.com/search.naver?sm=tab_hty.top&where=news&ssc=tab.news.all&query=코로나')
-
-  html = response.text
-  soup = BeautifulSoup(html, 'html.parser')
-
-  links = soup.select(".news_tit")
-  articles = []
-
-  for link in links[:5]:
-    title = link.text
-    url = link.attrs['href']
-    articles.append({'title': title, 'url': url})
-
   return render_template('domestic/index.html', map_html = map_html , articles = articles)
 
 
 
 @bp.route('/<string:area>')
 def region(area):
+  # 코로나 기사 크롤링
+  articles = common_data(area)
+
   # 해당 지역과 관련된 코로나 발생률과 사망률 데이터 뽑아옴.
   area_data = sheet_data.get('시군구별(발생률,사망률)')
   
@@ -126,8 +137,7 @@ def region(area):
   filtered_total = filtered_data.query("시군구!='합계'")
   try: 
     area_info = {area: filtered_total.to_dict(orient='records')}
-    print(area_info)
   except KeyError:
     return f"{area} 데이터가 없습니다.", 404
   
-  return render_template('domestic/area_index.html', area=area, area_info=area_info)
+  return render_template('domestic/index.html', area=area, area_info=area_info, articles=articles)
