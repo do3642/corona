@@ -2,7 +2,7 @@
 // 키워드: 전세계 일간현황, 최초 일간현황 데이터 삽입, 로딩svg삽입,셀렉트 항목 변경
 // 페이지 방문 시 작동할 기본세팅 (data불러오기)
 document.addEventListener('DOMContentLoaded', () => {
-  // 셀렉트 박스 오늘로 설정 (html에서도 선택되어 있음)
+  // 셀렉트 박스 오늘로 설정 (html에서도 선택되어 있지만 데이터 초기값 불러올라고 지정)
   let selectedDateType = 'today';
 
   // 날짜 선택 박스 이벤트 리스너 추가
@@ -67,6 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
 async function fetchCovidData(dateType) {
   try {
     const response = await fetch(`/worldwide/covid-data/${dateType}`);
+    
 
     if (!response.ok) {
       throw new Error(`Error fetching data: ${response.statusText}`);
