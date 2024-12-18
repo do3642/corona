@@ -20,7 +20,16 @@ def get_total_data_for_date(date):
 def get_covid_data_for_date(date_type):
     current_date = datetime.datetime.now().date()
     two_years_ago = current_date - datetime.timedelta(days=365 * 2 + 180)
-    today = two_years_ago if date_type == "today" else (two_years_ago - timedelta(days=1) if date_type == "yesterday" else two_years_ago + timedelta(days=1))
+    if date_type == "today":
+        today = two_years_ago
+    elif date_type == "yesterday":
+        today = two_years_ago - timedelta(days=1)
+    elif date_type == "tomorrow":
+        today = two_years_ago + timedelta(days=1)
+    else:
+        today = two_years_ago + timedelta(days=2)
+        # 
+
 
     covid_data_today = get_total_data_for_date(today)
     covid_data_yesterday = get_total_data_for_date(today - timedelta(days=1))
