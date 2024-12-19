@@ -241,7 +241,9 @@
     </section>
   </main>
 
-
+  <video autoplay muted loop id="background-video">
+    <source src="{{url_for('worldwide.static', filename='video/world.mp4')}}" type="video/mp4">
+  </video>
   <script src="https://kit.fontawesome.com/c0680c70ea.js" crossorigin="anonymous"></script>
   <script src="{{ url_for('worldwide.static', filename='js/worldwide.js') }}"></script>
 </body>

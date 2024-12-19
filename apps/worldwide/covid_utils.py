@@ -8,6 +8,8 @@ from sklearn.preprocessing import MinMaxScaler
 import numpy as np
 import pandas as pd
 import joblib
+from decimal import Decimal
+
 
 
 from apps.worldwide.models import WhoData, CountryTranslation,WorldLatLong
@@ -25,18 +27,17 @@ scaler_y_path = os.path.join(os.path.dirname(__file__), 'models', 'scaler_y.pkl'
 scaler_X = joblib.load(scaler_X_path)
 scaler_y = joblib.load(scaler_y_path)
 
-from decimal import Decimal
 
 # 예측 함수
 def predict_covid(date_str):
     try:
         # 예측 날짜 처리
         date_to_predict = pd.to_datetime(date_str)
-        print(f"예측할 날짜: {date_to_predict}")
+        # print(f"예측할 날짜: {date_to_predict}")
         
         # 날짜 정수화 (훈련 데이터 기준)
         date_int = (date_to_predict - pd.to_datetime('2020-01-04')).days  # 훈련 시작 날짜 기준
-        print(f"정수화된 날짜: {date_int}")
+        # print(f"정수화된 날짜: {date_int}")
         
         # 실제 데이터에서 전날 데이터 가져오기
         covid_data_yesterday = get_total_data_for_date(date_to_predict - timedelta(days=1))
@@ -48,18 +49,18 @@ def predict_covid(date_str):
             float(covid_data_yesterday['cumulative_deaths']),
             float(covid_data_yesterday['cumulative_recoveries']),
         ]).reshape(1, -1)
-        print(f"전날 데이터: {previous_day_data}")
+        # print(f"전날 데이터: {previous_day_data}")
 
         # 날짜 정보 추가
         date_array = np.array([[date_int]])  # 날짜 정보 2D 배열로
         
         # 입력 데이터 결합 (날짜 정보 + 전날 데이터)
         input_data = np.hstack([date_array, previous_day_data])  # 차원이 일치해 결합 가능
-        print(f"결합된 입력 데이터: {input_data}")
+        # print(f"결합된 입력 데이터: {input_data}")
 
         # 입력 데이터 정규화
         input_scaled = scaler_X.transform(input_data)
-        print(f"정규화된 입력 데이터: {input_scaled}")
+        # print(f"정규화된 입력 데이터: {input_scaled}")
 
         # 예측
         predicted_scaled = model.predict(input_scaled)
@@ -67,13 +68,13 @@ def predict_covid(date_str):
         predicted = np.maximum(predicted, 0)  # 음수는 0으로 처리
 
         # 예측 결과 출력
-        print(f"예측 날짜: {date_str}")
-        print(f"예측된 새로운 확진자 수: {predicted[0][0]}")
-        print(f"예측된 새로운 사망자 수: {predicted[0][1]}")
-        print(f"예측된 새로운 완치자 수: {predicted[0][2]}")
-        print(f"예측된 누적 확진자 수: {predicted[0][3]}")
-        print(f"예측된 누적 사망자 수: {predicted[0][4]}")
-        print(f"예측된 누적 완치자 수: {predicted[0][5]}")
+        # print(f"예측 날짜: {date_str}")
+        # print(f"예측된 새로운 확진자 수: {predicted[0][0]}")
+        # print(f"예측된 새로운 사망자 수: {predicted[0][1]}")
+        # print(f"예측된 새로운 완치자 수: {predicted[0][2]}")
+        # print(f"예측된 누적 확진자 수: {predicted[0][3]}")
+        # print(f"예측된 누적 사망자 수: {predicted[0][4]}")
+        # print(f"예측된 누적 완치자 수: {predicted[0][5]}")
 
         # 예측된 값을 Decimal로 변환하여 반환
         return {
@@ -119,15 +120,15 @@ def get_covid_data_for_date(date_type):
         # 전날 데이터는 DB에서 조회
         yesterday_data = get_total_data_for_date(today - timedelta(days=1))  # 예측 날짜의 전날 데이터
 
-        print("예측모델데이터:",today_data)
-        print("db조회 데이터:",yesterday_data)
-        print("데이터 잘받 았는지:",today_data["new_cases"])
+        # print("예측모델데이터:",today_data)
+        # print("db조회 데이터:",yesterday_data)
+        # print("데이터 잘받 았는지:",today_data["new_cases"])
         
         # 변화량 계산
         new_cases_change = today_data["new_cases"] - yesterday_data["new_cases"]
         new_deaths_change = today_data["new_deaths"] - yesterday_data["new_deaths"]
         new_recoveries_change = today_data["new_recoveries"] - yesterday_data["new_recoveries"]
-        print("계산됐는지:",new_cases_change)
+        # print("계산됐는지:",new_cases_change)
         # 예측된 데이터를 반환
         return {
             "new_cases": today_data["new_cases"],

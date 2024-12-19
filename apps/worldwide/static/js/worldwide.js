@@ -73,7 +73,7 @@ async function fetchCovidData(dateType) {
       throw new Error(`Error fetching data: ${response.statusText}`);
     }
     const data = await response.json();
-    console.log(data)
+    // console.log(data)
     
     // 데이터를 화면에 반영하는 함수 호출
     updateCovidData(data);
