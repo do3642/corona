@@ -154,8 +154,7 @@ def get_covid_data_for_date(date_type):
     new_cases_change = covid_data_today["new_cases"] - covid_data_yesterday["new_cases"]
     new_deaths_change = covid_data_today["new_deaths"] - covid_data_yesterday["new_deaths"]
     new_recoveries_change = covid_data_today["new_recoveries"] - covid_data_yesterday["new_recoveries"]
-    print(covid_data_today)
-    print(covid_data_today["new_cases"])
+    
     return {
         "new_cases": covid_data_today["new_cases"],
         "new_cases_change": new_cases_change,
@@ -173,12 +172,20 @@ def get_covid_data_for_date(date_type):
 
 
 
-def get_covid_map_and_data():
+def get_covid_map_and_data(selected_date):
     current_date = datetime.datetime.now().date()
     two_years_ago = current_date - datetime.timedelta(days=365 * 2 + 180)
 
+    # selected_date가 제공되었으면 해당 날짜로, 아니면 기본값 두 년 반 전 날짜 사용
+    if selected_date:
+       # selected_date가 문자열이라면 날짜로 변환, 이미 datetime.date 객체라면 그대로 사용
+        if isinstance(selected_date, str):
+            selected_date = datetime.datetime.strptime(selected_date, '%Y-%m-%d').date()
+    else:
+        selected_date = two_years_ago
+
     records = db.session.query(WhoData, CountryTranslation, WorldLatLong).filter(
-        WhoData.date_reported == two_years_ago,
+        WhoData.date_reported == selected_date,
         WhoData.country_code == CountryTranslation.country_code,
         WhoData.country_code == WorldLatLong.country_code
     ).distinct(WhoData.country).all()

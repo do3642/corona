@@ -18,7 +18,9 @@ worldwide_bp = Blueprint(
 
 @worldwide_bp.route('/')
 def worldwide_data():
-    records, country_percentages, _ = get_covid_map_and_data()
+    selected_date = request.args.get('date', datetime.datetime.now().date()- datetime.timedelta(days=365 * 2 + 180))
+    print("날짜확인",selected_date)
+    records, country_percentages, _ = get_covid_map_and_data(selected_date)
     daily_classList = [
         {'label': '확진자', 'className': 'new-cases'},
         {'label': '완치자', 'className': 'new-recoveries'},
@@ -78,6 +80,7 @@ def get_daily_data():
     except Exception as e:
         print(f"Error fetching data: {e}")
         return jsonify({"error": "An error occurred while fetching data"}), 500
+
 
 
 

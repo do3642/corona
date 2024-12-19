@@ -514,3 +514,84 @@ function adjustMiddleContentHeight() {
 // 페이지 로드와 리사이즈 시 실행
 window.addEventListener('load', adjustMiddleContentHeight);
 window.addEventListener('resize', adjustMiddleContentHeight);
+
+
+
+
+
+
+document.addEventListener('DOMContentLoaded', () => {
+  const updateDayElement = document.querySelector('.update-day');
+  const datePopup = document.querySelector('#date-popup');
+  const datePicker = document.querySelector('#date-picker');
+  const submitDateButton = document.querySelector('#submit-date');
+  const cancelDateButton = document.querySelector('#cancel-date');
+
+  // 날짜 범위 정의
+  const minDate = new Date('2020-01-04');
+  const maxDate = new Date('2024-11-16');
+
+  // 1. .update-day 클릭 시 #date-popup의 hidden 클래스를 토글
+  updateDayElement.addEventListener('click', () => {
+      // 팝업이 열려 있으면 외부 클릭 이벤트 등록
+      datePopup.classList.toggle('hidden');
+      if (!datePopup.classList.contains('hidden')) {
+          document.addEventListener('click', handleOutsideClick);
+      }
+  });
+
+  // 2. #submit-date 클릭 시 서버로 선택된 날짜 전송
+  submitDateButton.addEventListener('click', () => {
+      const selectedDate = datePicker.value;
+
+      if (!selectedDate) {
+          alert('날짜를 선택해주세요.');
+          return;
+      }
+
+      const selectedDateObj = new Date(selectedDate);
+
+      // 선택된 날짜가 범위를 벗어났는지 확인
+      if (selectedDateObj < minDate || selectedDateObj > maxDate) {
+          alert(`날짜는 ${minDate.toLocaleDateString()} 부터 ${maxDate.toLocaleDateString()} 까지 선택할 수 있습니다.`);
+          return;
+      }
+      console.log(selectedDate)
+        // 서버로 날짜 전송 (GET 방식)
+      fetch(`/worldwide?date=${selectedDate}`)
+      .then(response => {
+          if (!response.ok) throw new Error('서버 요청 실패');
+          // 응답을 받지 않고, 그냥 성공만 확인
+          console.log("날짜 전송 완료");
+      })
+      .catch(error => {
+          console.error('에러 발생:', error);
+          alert('날짜 전송 중 오류가 발생했습니다.');
+      });
+
+
+      // 팝업 닫기
+      datePopup.classList.add('hidden');
+      document.removeEventListener('click', handleOutsideClick); // 외부 클릭 이벤트 제거
+  });
+
+  // 3. #cancel-date 클릭 시 팝업 닫기 및 외부 클릭 처리
+  cancelDateButton.addEventListener('click', (event) => {
+      event.stopPropagation(); // 부모 요소로의 이벤트 전파 방지
+      datePopup.classList.add('hidden');
+      document.removeEventListener('click', handleOutsideClick); // 외부 클릭 이벤트 제거
+  });
+
+  // 외부 클릭 시 팝업 닫기
+  function handleOutsideClick(event) {
+      if (!datePopup.contains(event.target) && !updateDayElement.contains(event.target)) {
+          datePopup.classList.add('hidden');
+          document.removeEventListener('click', handleOutsideClick); // 외부 클릭 이벤트 제거
+      }
+  }
+
+  // 4. #date-popup 내부 클릭 이벤트가 외부로 전파되지 않도록
+  datePopup.addEventListener('click', (event) => {
+      event.stopPropagation(); // 클릭 이벤트 전파 방지
+  });
+});

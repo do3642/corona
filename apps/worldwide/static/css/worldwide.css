@@ -33,6 +33,10 @@ main{
   color: #fff; /* 기본 글자 색상 */
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5), 0 6px 20px rgba(0, 255, 255, 0.2); /* 부드러운 빛 효과 */
   transition: 0.3s ease;
+  position: relative;
+  z-index: 10;
+  cursor: pointer;
+
 }
 
 /* 호버 시 효과 */
@@ -62,6 +66,30 @@ main{
   font-family: inherit;
   color: #fff; /* 기본 텍스트 색상 */
 }
+
+.hidden {
+  display: none;
+}
+#date-popup{
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translate(-50%);
+  padding: 20px;
+  background: white;
+  border: 1px solid #ccc;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+}
+
+
+
+
+
+
+
+
+
 
 /* 검색창 */
 .search-box{
