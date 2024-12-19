@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, request
 import folium
 import folium.features
 import folium.utilities
@@ -27,7 +27,7 @@ def common_data(area=None):
   links = soup.select(".news_tit")
   articles = []
 
-  for link in links[:5]:
+  for link in links[:7]:
     title = link.text
     url = link.attrs['href']
     articles.append({'title': title, 'url': url})
@@ -139,5 +139,6 @@ def region(area):
     area_info = {area: filtered_total.to_dict(orient='records')}
   except KeyError:
     return f"{area} 데이터가 없습니다.", 404
+  
   
   return render_template('domestic/index.html', area=area, area_info=area_info, articles=articles)

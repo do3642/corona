@@ -4,9 +4,15 @@ document.addEventListener("DOMContentLoaded", () => {
   const graphConfigs = [
     {id: "chart-area", url: "/api/graph/area_incidence"},
     {id: "chart-age", url: "/api/graph/age_incidence"},
+  ];
+
+  const graphConfigsWithArea = [
+    {id: "chart-time", url: `/api/graph/time_incidence/${area}`}
   ]
 
-  graphConfigs.forEach(config => {
+  const selectedConfigs = area ? graphConfigsWithArea : graphConfigs;
+
+  selectedConfigs.forEach(config => {
     fetch(config.url)
       .then(response => response.json())
       .then(data => {
@@ -23,28 +29,39 @@ document.addEventListener("DOMContentLoaded", () => {
       });
   });
 
-  document.querySelector("#graph1 div").addEventListener("click", (event) => {
-    const canvasId = "chart-area"
-    const button = event.target;
+  if(!area) {
+    document.querySelector("#graph1 div").addEventListener("click", (event) => {
+      const canvasId = "chart-area";
+      const button = event.target;
 
-    changeChart(canvasId, button);
-  })
+      changeChart(canvasId, button);
+    });
 
-  document.querySelector("#graph3 div").addEventListener("click", (event) => {
-    const canvasId = "chart-age";
-    const button = event.target;
+    document.querySelector("#graph3 div").addEventListener("click", (event) => {
+      const canvasId = "chart-age";
+      const button = event.target;
 
-    changeChart(canvasId, button);
-  })
+      changeChart(canvasId, button);
+    });
+  }
+
+  if(area) {
+    document.querySelector("#graph4 div").addEventListener("click", (event) => {
+      const canvasId = "chart-time";
+      const button = event.target;
+
+      changeChart(canvasId, button);
+    });
+  }
   
 });
 
 // 버튼을 누르면 차트가 바뀌게 해주는 함수
 function changeChart(canvasId, button) {
   const graphId = button.getAttribute("data-graph");
-
+  const url = area ? `/api/graph/${graphId}/${area}` : `/api/graph/${graphId}`
   if (graphId) {
-    fetch(`/api/graph/${graphId}`)
+    fetch(url)
       .then(response => response.json())
       .then(data => {
         if (chartInstances[canvasId]) {
@@ -68,7 +85,9 @@ function createChart(canvasId, data) {
         label: data.label,
         data: data.values,
         backgroundColor: data.backgroundColor,
-        borderWidth: 1
+        borderColor: data.borderColor,
+        pointStyle: data.pointStyle,
+        borderWidth: 1.5
       }]
     },
     options: {

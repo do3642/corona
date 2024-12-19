@@ -25,7 +25,9 @@ def get_graph(graph_id):
       "values": area_total['발생률\n(인구10만명당, 명)'].tolist(),
       "label": '지역별 코로나 발병률(인구 10만명당, 명)',
       "type": "bar",
-      "backgroundColor": "rgba(101,148,189,1)"
+      "backgroundColor": "rgba(101,148,189,1)",
+      "pointStyle": "circle",
+      "borderColor": 'rgba(101,148,189,1)'
     }
     return jsonify(data)
   
@@ -38,7 +40,9 @@ def get_graph(graph_id):
       'values': area_total['사망률\n(인구10만명당, 명)'].tolist(),
       'label': '지역별 코로나 사망률(인구 10만명당, 명)',
       'type': 'bar',
-      'backgroundColor': 'rgba(189,101,101,1)'
+      'backgroundColor': 'rgba(189,101,101,1)',
+      "pointStyle": "circle",
+      "borderColor": 'rgba(189,101,101,1)'
     }
 
     return jsonify(data)
@@ -58,7 +62,9 @@ def get_graph(graph_id):
       "values": incidence_rate.tolist(),
       "label": '연령대별 코로나 발병률(%)',
       "type": "bar",
-      "backgroundColor": 'rgba(202, 190, 28, 1)'
+      "backgroundColor": 'rgba(202, 190, 28, 1)',
+      "pointStyle": "circle",
+      "borderColor": 'rgba(202, 190, 28, 1)'
     }
 
     return jsonify(data)
@@ -78,7 +84,9 @@ def get_graph(graph_id):
       "values": death_rate.tolist(),
       "label": '연령대별 코로나 사망률(%)',
       "type": "bar",
-      "backgroundColor": 'rgba(187, 100, 68, 1)'
+      "backgroundColor": 'rgba(187, 100, 68, 1)',
+      "pointStyle": "circle",
+      "borderColor": 'rgba(187, 100, 68, 1)'
     }
 
     return jsonify(data)
@@ -100,17 +108,60 @@ def get_graph(graph_id):
       "values": case_death.tolist(),
       "label" : '확진자 중 사망률(%)',
       "type": 'bar',
-      "backgroundColor": 'rgba(211, 49, 49, 1)'
+      "backgroundColor": 'rgba(211, 49, 49, 1)',
+      "pointStyle": "circle",
+      "borderColor": 'rgba(211, 49, 49, 1)'
     }
 
     return jsonify(data)
   
-  # 지역별 시간에 따른 코로나 확진자 수
-  # elif graph_id == 'time_incidence':
-  #   df = sheet_data.get('시도별발생(17개시도+검역)')
-  #   time = df.query("일자 != '누적(명)'")
-
-  #   return jsonify(data)
-  
   else:
     return jsonify({"error": "해당 그래프ID는 존재하지 않는 그래프입니다."}), 404
+  
+
+@bp.route('/<graph_id>/<area>', methods=['GET'])
+def get_graph_by_area(graph_id, area):
+  if graph_id == 'time_incidence':
+    data = sheet_data.get('시도별발생(17개시도+검역)')
+    data_date = data.query("일자 != '누적(명)'")
+
+    if area not in data_date.columns:
+      return jsonify({"error": f"{area}에 해당하는 데이터가 없습니다."})
+    
+    # 결측값을 0으로 대체
+    time_data = data_date[['일자', area]].fillna(0)
+    data = {
+      "labels": time_data['일자'].astype(str).tolist(),
+      "values": time_data[area].tolist(),
+      "label": f"{area} 월별 확진자",
+      "type": "line",
+      "backgroundColor": "transparent",
+      "pointStyle": False,
+      "borderColor": 'rgba(22, 167, 12, 0.91)'
+
+    }
+
+    return jsonify(data)
+  
+  elif graph_id == 'time_death':
+    data = sheet_data.get('시도별사망(17개시도+검역) ')
+    data_date = data.query("일자 != '누적(명)'")
+
+    time_data = data_date[['일자', area]].fillna(0)
+    
+    data = {
+      "labels": time_data['일자'].astype(str).tolist(),
+      "values": time_data[area].tolist(),
+      "label": f"{area} 월별 사망자",
+      "type": "line",
+      "backgroundColor": 'transparent',
+      "pointStyle": False,
+      "borderColor": 'rgba(187, 57, 42, 1)'
+
+    }
+
+    return jsonify(data)
+  
+  else: 
+    return jsonify({"error": "해당 그래프ID는 존재하지 않는 그래프입니다."})
+    
