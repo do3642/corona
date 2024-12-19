@@ -7,76 +7,88 @@ import os
 from sklearn.preprocessing import MinMaxScaler
 import numpy as np
 import pandas as pd
+import joblib
 
 
 from apps.worldwide.models import WhoData, CountryTranslation,WorldLatLong
 from apps.app import db
 
+
 # 모델 경로 및 모델 로드
 model_path = os.path.join(os.path.dirname(__file__), 'models', 'covid_prediction_model.h5')
 model = load_model(model_path)
+# 저장된 스케일러 파일 경로
+scaler_X_path = os.path.join(os.path.dirname(__file__), 'models', 'scaler_X.pkl')
+scaler_y_path = os.path.join(os.path.dirname(__file__), 'models', 'scaler_y.pkl')
+
+# 저장된 스케일러 불러오기
+scaler_X = joblib.load(scaler_X_path)
+scaler_y = joblib.load(scaler_y_path)
+
+from decimal import Decimal
 
 # 예측 함수
 def predict_covid(date_str):
-    # 입력 날짜 처리
-    date_to_predict = datetime.datetime.strptime(date_str, '%Y-%m-%d').date()
-    print('예측 날짜:', date_to_predict)
-    
-    # 두 년 반 전의 기준 날짜 계산
-    current_date = datetime.datetime.now().date()
-    two_years_ago = current_date - datetime.timedelta(days=365 * 2 + 180)
-    date_int = (date_to_predict - two_years_ago).days
-    
-    # 예측에 사용할 입력 데이터 구성 (날짜 + 전날 데이터)
-    # 여기서는 예시로, 해당 날짜에 대한 데이터 및 이전 날짜에 대한 데이터를 넣는 방식으로 처리
-    previous_day = get_total_data_for_date(date_to_predict - datetime.timedelta(days=1))  # 어제 데이터 호출
-    today_data = get_total_data_for_date(date_to_predict)  # 오늘 데이터 호출
-    
-    # 이전 날짜 데이터를 2차원 배열로 변환
-    previous_day_array = np.array([[
-        previous_day['new_cases'], previous_day['new_deaths'], previous_day['new_recoveries'], 
-        previous_day['cumulative_cases'], previous_day['cumulative_deaths'], previous_day['cumulative_recoveries']
-    ]])
-    
-    # 오늘 날짜 데이터를 2차원 배열로 변환
-    today_array = np.array([[
-        today_data['new_cases'], today_data['new_deaths'], today_data['new_recoveries'],
-        today_data['cumulative_cases'], today_data['cumulative_deaths'], today_data['cumulative_recoveries']
-    ]])
-    
-    # 데이터 정규화
-    scaler_X = MinMaxScaler()
-    scaler_y = MinMaxScaler()
-    previous_day_scaled = scaler_X.fit_transform(previous_day_array)
-    today_scaled = scaler_X.transform(today_array)
-    
-    # 예측
-    predicted_yesterday = model.predict(previous_day_scaled)
-    predicted_today = model.predict(today_scaled)
+    try:
+        # 예측 날짜 처리
+        date_to_predict = pd.to_datetime(date_str)
+        print(f"예측할 날짜: {date_to_predict}")
+        
+        # 날짜 정수화 (훈련 데이터 기준)
+        date_int = (date_to_predict - pd.to_datetime('2020-01-04')).days  # 훈련 시작 날짜 기준
+        print(f"정수화된 날짜: {date_int}")
+        
+        # 실제 데이터에서 전날 데이터 가져오기
+        covid_data_yesterday = get_total_data_for_date(date_to_predict - timedelta(days=1))
+        previous_day_data = np.array([
+            float(covid_data_yesterday['new_cases']),
+            float(covid_data_yesterday['new_deaths']),
+            float(covid_data_yesterday['new_recoveries']),
+            float(covid_data_yesterday['cumulative_cases']),
+            float(covid_data_yesterday['cumulative_deaths']),
+            float(covid_data_yesterday['cumulative_recoveries']),
+        ]).reshape(1, -1)
+        print(f"전날 데이터: {previous_day_data}")
 
-    # 예측 값들 간의 변화 계산
-    new_cases_change = predicted_today[0] - predicted_yesterday[0]
-    new_deaths_change = predicted_today[1] - predicted_yesterday[1]
-    new_recoveries_change = predicted_today[2] - predicted_yesterday[2]
-    total_cases_change = predicted_today[3] - predicted_yesterday[3]
-    total_recoveries_change = predicted_today[4] - predicted_yesterday[4]
-    total_deaths_change = predicted_today[5] - predicted_yesterday[5]
+        # 날짜 정보 추가
+        date_array = np.array([[date_int]])  # 날짜 정보 2D 배열로
+        
+        # 입력 데이터 결합 (날짜 정보 + 전날 데이터)
+        input_data = np.hstack([date_array, previous_day_data])  # 차원이 일치해 결합 가능
+        print(f"결합된 입력 데이터: {input_data}")
 
-    # 결과 반환
-    return {
-        "new_cases": predicted_today[0],
-        "new_cases_change": new_cases_change,
-        "new_recoveries": predicted_today[2],
-        "new_recoveries_change": new_recoveries_change,
-        "new_deaths": predicted_today[1],
-        "new_deaths_change": new_deaths_change,
-        "total_cases": predicted_today[3],
-        "total_cases_change": total_cases_change,
-        "total_recoveries": predicted_today[4],
-        "total_recoveries_change": total_recoveries_change,
-        "total_deaths": predicted_today[5],
-        "total_deaths_change": total_deaths_change
-    }
+        # 입력 데이터 정규화
+        input_scaled = scaler_X.transform(input_data)
+        print(f"정규화된 입력 데이터: {input_scaled}")
+
+        # 예측
+        predicted_scaled = model.predict(input_scaled)
+        predicted = scaler_y.inverse_transform(predicted_scaled)  # 원래 스케일로 복원
+        predicted = np.maximum(predicted, 0)  # 음수는 0으로 처리
+
+        # 예측 결과 출력
+        print(f"예측 날짜: {date_str}")
+        print(f"예측된 새로운 확진자 수: {predicted[0][0]}")
+        print(f"예측된 새로운 사망자 수: {predicted[0][1]}")
+        print(f"예측된 새로운 완치자 수: {predicted[0][2]}")
+        print(f"예측된 누적 확진자 수: {predicted[0][3]}")
+        print(f"예측된 누적 사망자 수: {predicted[0][4]}")
+        print(f"예측된 누적 완치자 수: {predicted[0][5]}")
+
+        # 예측된 값을 Decimal로 변환하여 반환
+        return {
+            "new_cases": Decimal(str(predicted[0][0])).quantize(Decimal('1.')),
+            "new_deaths": Decimal(str(predicted[0][1])).quantize(Decimal('1.')),
+            "new_recoveries": Decimal(str(predicted[0][2])).quantize(Decimal('1.')),
+            "total_cases": Decimal(str(predicted[0][3])).quantize(Decimal('1.')),
+            "total_deaths": Decimal(str(predicted[0][4])).quantize(Decimal('1.')),
+            "total_recoveries": Decimal(str(predicted[0][5])).quantize(Decimal('1.'))
+        }
+
+    except Exception as e:
+        print(f"오류 발생: {e}")
+        return None
+
 
 def get_total_data_for_date(date):
     return {
@@ -101,38 +113,38 @@ def get_covid_data_for_date(date_type):
     elif date_type == "tomorrow":
         today = two_years_ago + timedelta(days=1)
     else:
-        today = two_years_ago + timedelta(days=1)  # 예측을 위한 날짜 설정
-        print("예측 날짜:", today)
+        today = two_years_ago + timedelta(days=1)  # 예측할 날짜 설정
+        # 예측된 데이터
+        today_data = predict_covid(today)  # 예측 날짜의 데이터
+        # 전날 데이터는 DB에서 조회
+        yesterday_data = get_total_data_for_date(today - timedelta(days=1))  # 예측 날짜의 전날 데이터
 
-        # 예측 모델 호출 (오늘 예측 값 받기)
-        predicted_today = predict_covid(today.strftime('%Y-%m-%d'))  # 예측된 오늘 값
+        print("예측모델데이터:",today_data)
+        print("db조회 데이터:",yesterday_data)
+        print("데이터 잘받 았는지:",today_data["new_cases"])
         
-         # 예측된 어제 날짜 (예시로 예측 모델을 통해 어제 날짜도 예측할 수 있습니다)
-        predicted_yesterday = predict_covid((today - timedelta(days=1)).strftime('%Y-%m-%d'))  # 예측된 어제 값
-
-        # 예측 값들 간의 변화 계산
-        new_cases_change = predicted_today[0] - predicted_yesterday[0]
-        new_deaths_change = predicted_today[1] - predicted_yesterday[1]
-        new_recoveries_change = predicted_today[2] - predicted_yesterday[2]
-        total_cases_change = predicted_today[3] - predicted_yesterday[3]
-        total_recoveries_change = predicted_today[4] - predicted_yesterday[4]
-        total_deaths_change = predicted_today[5] - predicted_yesterday[5]
-
+        # 변화량 계산
+        new_cases_change = today_data["new_cases"] - yesterday_data["new_cases"]
+        new_deaths_change = today_data["new_deaths"] - yesterday_data["new_deaths"]
+        new_recoveries_change = today_data["new_recoveries"] - yesterday_data["new_recoveries"]
+        print("계산됐는지:",new_cases_change)
+        # 예측된 데이터를 반환
         return {
-            "new_cases": predicted_today[0],
+            "new_cases": today_data["new_cases"],
             "new_cases_change": new_cases_change,
-            "new_recoveries": predicted_today[2],
+            "new_recoveries": today_data["new_recoveries"],
             "new_recoveries_change": new_recoveries_change,
-            "new_deaths": predicted_today[1],
+            "new_deaths": today_data["new_deaths"],
             "new_deaths_change": new_deaths_change,
-            "total_cases": predicted_today[3],
-            "total_cases_change": total_cases_change,
-            "total_recoveries": predicted_today[4],
-            "total_recoveries_change": total_recoveries_change,
-            "total_deaths": predicted_today[5],
-            "total_deaths_change": total_deaths_change
+            "total_cases": today_data["total_cases"],
+            "total_cases_change": today_data["new_cases"],
+            "total_recoveries": today_data["total_recoveries"],
+            "total_recoveries_change": today_data["new_recoveries"],
+            "total_deaths": today_data["total_deaths"],
+            "total_deaths_change": today_data["new_deaths"]
         }
-
+        
+        
     # 오늘과 어제의 데이터를 DB에서 조회하여 반환
     covid_data_today = get_total_data_for_date(today)
     covid_data_yesterday = get_total_data_for_date(today - timedelta(days=1))
@@ -141,7 +153,8 @@ def get_covid_data_for_date(date_type):
     new_cases_change = covid_data_today["new_cases"] - covid_data_yesterday["new_cases"]
     new_deaths_change = covid_data_today["new_deaths"] - covid_data_yesterday["new_deaths"]
     new_recoveries_change = covid_data_today["new_recoveries"] - covid_data_yesterday["new_recoveries"]
-
+    print(covid_data_today)
+    print(covid_data_today["new_cases"])
     return {
         "new_cases": covid_data_today["new_cases"],
         "new_cases_change": new_cases_change,
