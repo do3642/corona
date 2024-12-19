@@ -10,7 +10,7 @@
 
 {% block content %}
 <!-- 사이드바는 모든 차트들과 화면 다 구현 되면 그때 구현 할 예정 -->
-  <div class="domestic_sidebar">
+  <!-- <div class="domestic_sidebar">
     <ul class="domestic_sidebar_tag">
       <li><a href="#">지역별<br>발생률</a></li>
       <li><a href="#domestic_covid_news">맨 밑임</a></li>
@@ -18,7 +18,7 @@
       <li><a href="#">버튼1</a></li>
       <a href="#" class="go-to-top">맨 위로</a>
     </ul>
-  </div>
+  </div> -->
 
   <h3>
     아래 자료들은 모두 2023.08.31 0시 기준 질병관리청 질병보건 통합관리시스템에 신고된 코로나19 확진자 및 사망자에 대한 자료임.
@@ -32,8 +32,10 @@
   {% if area %}
   <article id="graph4">
     <div>
-      <button data-graph="time_incidence">확진자</button>
-      <button data-graph="time_death">사망자</button>
+      <button data-graph="time_incidence">전체 확진자</button>
+      <button data-graph="time_death">전체 사망자</button>
+      <button data-graph="time_incidence_month">월별 평균 확진자</button>
+      <button data-graph="time_death_month">월별 평균 사망자</button>
     </div>
     <canvas id="chart-time" width="850px" height="500px"></canvas>
   </article>

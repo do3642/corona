@@ -124,12 +124,9 @@ def get_graph_by_area(graph_id, area):
   if graph_id == 'time_incidence':
     data = sheet_data.get('시도별발생(17개시도+검역)')
     data_date = data.query("일자 != '누적(명)'")
-
-    if area not in data_date.columns:
-      return jsonify({"error": f"{area}에 해당하는 데이터가 없습니다."})
     
     # 결측값을 0으로 대체
-    time_data = data_date[['일자', area]].fillna(0)
+    time_data = data_date[['일자', area]].replace('-', 0)
     data = {
       "labels": time_data['일자'].astype(str).tolist(),
       "values": time_data[area].tolist(),
@@ -146,12 +143,10 @@ def get_graph_by_area(graph_id, area):
   elif graph_id == 'time_death':
     data = sheet_data.get('시도별사망(17개시도+검역) ')
     data_date = data.query("일자 != '누적(명)'")
-
-    time_data = data_date[['일자', area]].fillna(0)
     
     data = {
-      "labels": time_data['일자'].astype(str).tolist(),
-      "values": time_data[area].tolist(),
+      "labels": data_date['일자'].astype(str).tolist(),
+      "values": data_date[area].tolist(),
       "label": f"{area} 월별 사망자",
       "type": "line",
       "backgroundColor": 'transparent',
@@ -161,6 +156,60 @@ def get_graph_by_area(graph_id, area):
     }
 
     return jsonify(data)
+  
+  elif graph_id == 'time_incidence_month':
+    data = sheet_data.get('시도별발생(17개시도+검역)')
+    data_date = data.query("일자 != '누적(명)'")
+    print(data_date[area].dtype)
+
+    time_data = data_date[['일자', area]].replace('-', 0)
+
+    time_data['일자'] = pd.to_datetime(time_data['일자'])
+    time_data['년도월'] = time_data['일자'].dt.to_period('M')
+
+    monthly_data = time_data.groupby('년도월')[area].mean().reset_index()
+    monthly_data['년도월'] = monthly_data['년도월'].astype(str)
+
+    data = {
+      "labels" : monthly_data['년도월'].tolist(),
+      "values" : monthly_data[area].tolist(),
+      "label" : f"{area} 월별 평균 확진자",
+      "type" : "line",
+      "backgroundColor": "transparent",
+      "pointStyle": False,
+      "borderColor": 'rgba(22, 167, 12, 0.91)'
+    }
+    
+    return jsonify(data)
+  
+  elif graph_id == 'time_death_month':
+    data = sheet_data.get('시도별사망(17개시도+검역) ')
+    data_date = data.query("일자 != '누적(명)'")
+
+    data_date['일자'] = pd.to_datetime(data_date['일자'], errors='coerce')
+    data_date[area] = pd.to_numeric(data_date[area], errors='coerce')
+
+    # 필요한 열에서 결측값 제거
+    time_data = data_date.dropna(subset=['일자', area])  # '일자' 또는 'area'가 비어 있는 행 제거
+
+    # '년도월'로 그룹화하여 월별 평균 계산
+    time_data['년도월'] = time_data['일자'].dt.to_period('M')
+    monthly_data = time_data.groupby('년도월')[area].mean().reset_index()
+    monthly_data['년도월'] = monthly_data['년도월'].astype(str)
+
+    # 그래프 데이터 구성
+    data = {
+        "labels": monthly_data['년도월'].tolist(),
+        "values": monthly_data[area].tolist(),
+        "label": f"{area} 월별 평균 사망자",
+        'type': 'line',
+        'backgroundColor': "transparent",
+        "pointStyle": False,
+        "borderColor": 'rgba(187, 57, 42, 1)'
+    }
+
+    return jsonify(data)
+
   
   else: 
     return jsonify({"error": "해당 그래프ID는 존재하지 않는 그래프입니다."})

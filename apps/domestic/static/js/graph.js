@@ -91,7 +91,7 @@ function createChart(canvasId, data) {
       }]
     },
     options: {
-      responsive: true,
+      responsive: false,
       scales: {
         y: {
           beginAtzero:true
