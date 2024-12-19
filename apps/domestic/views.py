@@ -5,6 +5,7 @@ import folium.utilities
 import requests
 from bs4 import BeautifulSoup
 import json
+import xmltodict
 
 from apps.domestic.data import sheet_data
 
@@ -141,4 +142,29 @@ def region(area):
     return f"{area} 데이터가 없습니다.", 404
   
   
+  # 지역 이름 변환 규칙
+  if area in ["충청북도", "충청남도", "전라북도", "전라남도", "경상북도", "경상남도"]:
+      short_area = area[0] + area[2]  # 첫 번째 글자 + 세 번째 글자
+  else:
+      short_area = area[:2]  # 앞 두 글자만 가져오기
+  
+  api_key = 'dacNztaQsUeSWz3VaWB%2B1d%2FgvQyr5brzFt9uq5%2B3au2oEmoCdzkWXPehjRwi5R4pdN%2F%2Fjeyklm4ZJDoHfoXLPg%3D%3D'
+  
+  url = f"http://apis.data.go.kr/1352000/ODMS_COVID_06/callCovid06Api?serviceKey={api_key}&sido={short_area}"
+  response = requests.get(url)
+  data = xmltodict.parse(response.text)
+  try:
+    items = data['response']['body']['items']['item']
+    if not isinstance(items,list):
+      items = [items]
+
+    hospitals = [
+      {'name': item.get('hospitalNm'), 'address': item.get('hospitalAddr'), 'tel': item.get('hospitalTel'), 'sido': item.get('sido')}
+      for item in items
+    ]
+    print(hospitals)
+
+  except KeyError:
+    return f"{area}에 대한 데이터를 찾을 수 없습니다.", 404
+
   return render_template('domestic/index.html', area=area, area_info=area_info, articles=articles)
