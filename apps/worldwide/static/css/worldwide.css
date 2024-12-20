@@ -1,9 +1,17 @@
 @import url("common.css");
 
 
-nav{
-  
+nav {
+  position: fixed;
+  right: 5%;
+  bottom: 5%;
+  z-index: 1000;
+  cursor: pointer;
+  width: 150px;
+  height: 150px;
+  background-color: #fff;
 }
+
 
 main{
   display: flex !important;
