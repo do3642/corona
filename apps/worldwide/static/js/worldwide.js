@@ -556,13 +556,16 @@ document.addEventListener('DOMContentLoaded', () => {
           alert(`날짜는 ${minDate.toLocaleDateString()} 부터 ${maxDate.toLocaleDateString()} 까지 선택할 수 있습니다.`);
           return;
       }
-      console.log(selectedDate)
         // 서버로 날짜 전송 (GET 방식)
-      fetch(`/worldwide?date=${selectedDate}`)
+      fetch(`/worldwide/data?date=${selectedDate}`)
       .then(response => {
           if (!response.ok) throw new Error('서버 요청 실패');
-          // 응답을 받지 않고, 그냥 성공만 확인
-          console.log("날짜 전송 완료");
+          return response.json(); // JSON 응답을 반환받음
+      })
+      .then(data => {
+          console.log("서버로부터 받은 데이터:", data);
+          updateDOM(data); // 받은 데이터를 DOM에 반영
+          
       })
       .catch(error => {
           console.error('에러 발생:', error);
@@ -594,4 +597,67 @@ document.addEventListener('DOMContentLoaded', () => {
   datePopup.addEventListener('click', (event) => {
       event.stopPropagation(); // 클릭 이벤트 전파 방지
   });
+});
+function updateDOM(data) {
+  // 1. 업데이트 날짜
+  document.querySelector('.update-day p:nth-child(2)').textContent = `${data.date_reported} 11:00`;
+
+  // 2. 국가 리스트 업데이트
+  const countryList = document.querySelector('.country-list ul');
+  
+  // 3. 국가별 데이터 갱신
+  data.records.forEach((record, index) => {
+      // 국가별 감염률 찾기
+      const countryPercentage = data.country_percentages.find(
+          p => p.country === record.country
+      );
+
+      // 각 국가 항목 (li)에서 필요한 부분만 갱신
+      const listItem = countryList.children[index];
+
+      // 국가명, 감염률, 일간 현황, 누적 현황 갱신
+      listItem.querySelector('.country-name strong').textContent = record.country_korean;
+      listItem.querySelector('.country-name .country-english').textContent = record.country;
+      listItem.querySelector('.infection-rate span').textContent = `${countryPercentage ? countryPercentage.percentage : 0}%`;
+      listItem.querySelector('.daily-status span').innerHTML = `<strong>${record.new_cases.toLocaleString()}</strong> | ${record.new_deaths.toLocaleString()}`;
+      listItem.querySelector('.cumulative-status span').innerHTML = `<strong>${record.cumulative_cases.toLocaleString()}</strong> | ${record.cumulative_deaths.toLocaleString()}`;
+  });
+}
+
+
+
+
+document.addEventListener('DOMContentLoaded', function () {
+  // 탭 전환 로직
+  function setupTabs(tabs, contents) {
+    tabs.forEach((tab, index) => {
+      tab.addEventListener('click', () => {
+        // 모든 탭과 콘텐츠에서 활성화 제거
+        tabs.forEach(t => t.classList.remove('active'));
+        contents.forEach(c => c.classList.remove('active'));
+
+        // 선택된 탭과 해당 콘텐츠에 활성화 추가
+        tab.classList.add('active');
+        contents[index].classList.add('active');
+      });
+    });
+  }
+
+  // 버튼과 콘텐츠 선택
+  const tabButtons = [document.querySelector('.news'), document.querySelector('.test-btn')];
+  const tabContents = [document.querySelector('.crw'), document.querySelector('.test')];
+
+  // 탭 설정
+  setupTabs(tabButtons, tabContents);
+
+  // 토글 버튼 로직
+  function setupToggleButton(toggleButton, toggleClass) {
+    toggleButton.addEventListener('click', () => {
+      toggleButton.classList.toggle(toggleClass);
+    });
+  }
+
+  // 토글 버튼 선택 및 설정
+  const toggleButton = document.querySelector('.toggle-button');
+  setupToggleButton(toggleButton, 'open');
 });

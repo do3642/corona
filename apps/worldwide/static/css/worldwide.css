@@ -2,8 +2,7 @@
 
 
 nav{
-  height: 30px;
-  border: 1px solid #eee;
+  display: none;
 }
 
 main{
@@ -66,22 +65,90 @@ main{
   font-family: inherit;
   color: #fff; /* 기본 텍스트 색상 */
 }
+/* Tooltip 기본 스타일 */
+.update-day[data-tooltip]:hover::after {
+  content: attr(data-tooltip); /* data-tooltip 속성 내용 */
+  position: absolute;
+  top: -30px;  /* 마우스 위쪽에 표시 */
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(0, 0, 0, 0.8); /* 어두운 배경 */
+  color: white;
+  padding: 5px 10px;
+  border-radius: 5px;
+  font-size: 14px;
+  white-space: nowrap; /* 텍스트가 한 줄로 표시되게 */
+  z-index: 1001;
+  pointer-events: none; /* Tooltip에 클릭 이벤트가 없도록 */
+  opacity: 0;
+  transition: opacity 0.3s ease; /* 투명도 전환 */
+}
+
+/* Hover 시 tooltip 표시 */
+.update-day:hover[data-tooltip]:after {
+  opacity: 1;
+}
 
 .hidden {
   display: none;
 }
-#date-popup{
+#date-popup {
   position: absolute;
   top: 100%;
   left: 50%;
   transform: translate(-50%);
   padding: 20px;
-  background: white;
-  border: 1px solid #ccc;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  background: #2a2a2a; /* Dark background */
+  border: 1px solid #444; /* Lighter border for contrast */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.7); /* Deep shadow for floating effect */
   z-index: 1000;
+  border-radius: 8px; /* Rounded corners for smoother look */
+  color: #f1f1f1; /* Light text for readability */
 }
 
+#date-popup input[type="date"] {
+  width: 100%;
+  padding: 8px;
+  background-color: #333; /* Dark input background */
+  color: #fff; /* White text */
+  border: 1px solid #555; /* Subtle border */
+  border-radius: 5px;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
+}
+
+#date-popup input[type="date"]:focus {
+  background-color: #444; /* Darker on focus */
+  border-color: #888; /* Focus border */
+}
+
+#date-popup button {
+  background-color: #0066cc; /* Blue buttons to pop out */
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  margin-top: 10px;
+  font-size: 14px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+#date-popup button:hover {
+  background-color: #005bb5; /* Darker blue on hover */
+}
+
+#date-popup button:focus {
+  outline: none;
+}
+
+#date-popup button#cancel-date {
+  background-color: #cc0000; /* Red for cancel */
+}
+
+#date-popup button#cancel-date:hover {
+  background-color: #b30000; /* Darker red on hover */
+}
 
 
 
@@ -708,9 +775,14 @@ main{
   background-color: rgba(0,0,0,0.4);
   border-radius: 10px;
   overflow: hidden;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 .right-tab-btn{
   display: flex;
+  width: 100%;
 }
 .right-tab-btn div{
   flex: 1;
@@ -727,4 +799,55 @@ main{
   height: 100%;
   object-fit: cover; /* 비디오 크기를 맞추기 위한 옵션 */
   z-index: -1; /* 콘텐츠 뒤로 보내기 */
+}
+
+
+
+
+.toggle-button {
+  width: 100px;
+  height: 50px;
+  background-color: #4CAF50;
+  border-radius: 25px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  position: relative;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+
+}
+
+.toggle-button:before {
+  content: "";
+  width: 40px;
+  height: 40px;
+  background-color: white;
+  border-radius: 50%;
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  transition: left 0.3s ease;
+}
+
+.toggle-button.open {
+  background-color: #f44336;
+}
+
+.toggle-button.open:before {
+  left: 55px;
+}
+
+
+.crw, .test {
+  display: none;
+}
+
+/* 활성화 상태 */
+.crw.active, .test.active {
+  display: block;
+}
+/* 버튼 활성화 스타일 */
+.right-tab-btn .news.active, .right-tab-btn .test-btn.active {
+  font-weight: bold;
+  color: #275efe;
+  border-bottom: 2px solid #275efe;
 }

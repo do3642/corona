@@ -106,6 +106,8 @@ def get_total_data_for_date(date):
 def get_covid_data_for_date(date_type):
     current_date = datetime.datetime.now().date()
     two_years_ago = current_date - datetime.timedelta(days=365 * 2 + 180)
+
+    
     
     if date_type == "today":
         today = two_years_ago
@@ -172,10 +174,10 @@ def get_covid_data_for_date(date_type):
 
 
 
-def get_covid_map_and_data(selected_date):
+def get_covid_map_and_data(selected_date=None):
     current_date = datetime.datetime.now().date()
     two_years_ago = current_date - datetime.timedelta(days=365 * 2 + 180)
-
+    print('작동테스트')
     # selected_date가 제공되었으면 해당 날짜로, 아니면 기본값 두 년 반 전 날짜 사용
     if selected_date:
        # selected_date가 문자열이라면 날짜로 변환, 이미 datetime.date 객체라면 그대로 사용
