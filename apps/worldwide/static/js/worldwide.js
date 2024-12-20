@@ -654,6 +654,8 @@ document.addEventListener('DOMContentLoaded', function () {
   function setupToggleButton(toggleButton, toggleClass) {
     toggleButton.addEventListener('click', () => {
       toggleButton.classList.toggle(toggleClass);
+      document.body.classList.toggle('dark-mode');
+      document.body.classList.toggle('light-mode');
     });
   }
 
