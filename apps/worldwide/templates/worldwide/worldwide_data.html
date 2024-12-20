@@ -24,7 +24,7 @@
   <link rel="stylesheet" href="{{ url_for('worldwide.static', filename='css/worldwide.css') }}">
 
 </head>
-<body>
+<body class="dark-mode">
   <nav>
     임시네비
   </nav>
@@ -33,13 +33,19 @@
     <!-- 왼쪽 국가 리스트 -->
     <section class="left-content">
       <!-- 데이터 업데이트날짜 -->
-      <article class="update-day">
+      <article class="update-day" data-tooltip="날짜를 클릭하여 변경하세요">
         <p>최신 업데이트 날짜</p>
         <p>{{records[0][0].date_reported}} 11:00</p>
         <p>
           <strong>확진자</strong>
           <span>| 사망자</span>
         </p>
+        <!-- 날짜 선택 팝업 -->
+        <div id="date-popup" class="hidden">
+          <input type="date" id="date-picker" min="2020-01-04" max="2024-11-16" value="2022-07-01">
+          <button id="submit-date">확인</button>
+          <button id="cancel-date">취소</button>
+        </div>
       </article>
       
       <!-- 검색창 부분 -->
@@ -92,7 +98,8 @@
             <select id="date-select">
               <option value="yesterday">어제</option>
               <option value="today" selected>오늘</option>
-              <option value="tomorrow">내일(예측)</option>
+              <option value="tomorrow">내일(진짜)</option>
+              <option value="prediction">내일(예측)</option>
             </select>
           </div>
             <div class="daily-covid-box">
@@ -233,14 +240,28 @@
     <!-- 오른쪽 크롤링 뉴스-->
     <section class="right-content">
       <div class="right-tab-btn">
-        <div>관련 뉴스</div>
-        <div>기능 </div>
+        <div class="news">관련 뉴스</div>
+        <div class="test-btn active">실험소</div>
       </div>
-      크롤링 영역입니다.
+      
+      <div class="crw">
+        크롤링 영역입니다.
+      </div>
+      <div class="test active">
+        <div class="test-mode">
+          <div>모드전환</div>
+          <div class="toggle-button"></div>
+      </div>
+      </div>
     </section>
+
+    
+
   </main>
 
-
+  <video autoplay muted loop id="background-video">
+    <source src="{{url_for('worldwide.static', filename='video/world.mp4')}}" type="video/mp4">
+  </video>
   <script src="https://kit.fontawesome.com/c0680c70ea.js" crossorigin="anonymous"></script>
   <script src="{{ url_for('worldwide.static', filename='js/worldwide.js') }}"></script>
 </body>

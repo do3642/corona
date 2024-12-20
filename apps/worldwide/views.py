@@ -37,6 +37,34 @@ def worldwide_data():
         daily_classList = daily_classList,
         total_classList = total_classList
     )
+
+@worldwide_bp.route('/data', methods=['GET'])
+def worldwide_data_json():
+    selected_date = request.args.get('date', datetime.datetime.now().date() - datetime.timedelta(days=365 * 2 + 180))
+    if isinstance(selected_date, str):
+        selected_date = datetime.datetime.strptime(selected_date, '%Y-%m-%d').date()
+
+    records, country_percentages, _ = get_covid_map_and_data(selected_date)
+
+    return jsonify({
+        'records': [
+            {
+                'country': record[0].country,
+                'country_korean': record[1].country_korean,
+                'new_cases': record[0].new_cases,
+                'new_deaths': record[0].new_deaths,
+                'cumulative_cases': record[0].cumulative_cases,
+                'cumulative_deaths': record[0].cumulative_deaths,
+                'lat': record[2].country_lat,
+                'lng': record[2].country_long,
+            }
+            for record in records
+        ],
+        'country_percentages': country_percentages,
+        'date_reported': records[0][0].date_reported.strftime('%Y-%m-%d') if records else None
+    })
+
+
 @worldwide_bp.route('/request/marker-data')
 def api_marker_data():
     _, _,  marker_data = get_covid_map_and_data()  # marker_data만 반환
@@ -78,6 +106,7 @@ def get_daily_data():
     except Exception as e:
         print(f"Error fetching data: {e}")
         return jsonify({"error": "An error occurred while fetching data"}), 500
+
 
 
 

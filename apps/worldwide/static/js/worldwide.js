@@ -2,7 +2,7 @@
 // 키워드: 전세계 일간현황, 최초 일간현황 데이터 삽입, 로딩svg삽입,셀렉트 항목 변경
 // 페이지 방문 시 작동할 기본세팅 (data불러오기)
 document.addEventListener('DOMContentLoaded', () => {
-  // 셀렉트 박스 오늘로 설정 (html에서도 선택되어 있음)
+  // 셀렉트 박스 오늘로 설정 (html에서도 선택되어 있지만 데이터 초기값 불러올라고 지정)
   let selectedDateType = 'today';
 
   // 날짜 선택 박스 이벤트 리스너 추가
@@ -67,11 +67,13 @@ document.addEventListener('DOMContentLoaded', () => {
 async function fetchCovidData(dateType) {
   try {
     const response = await fetch(`/worldwide/covid-data/${dateType}`);
+    
 
     if (!response.ok) {
       throw new Error(`Error fetching data: ${response.statusText}`);
     }
     const data = await response.json();
+    // console.log(data)
     
     // 데이터를 화면에 반영하는 함수 호출
     updateCovidData(data);
@@ -225,8 +227,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
       // markerData를 사용하여 마커 추가
       markerData.forEach(marker => {
+
           L.marker([marker.lat, marker.lng])
-              .bindPopup(`popupContent`)
+              .bindPopup(`<strong>${marker.country}</strong>`)
               .addTo(markerCluster);
       });
 
@@ -511,3 +514,152 @@ function adjustMiddleContentHeight() {
 // 페이지 로드와 리사이즈 시 실행
 window.addEventListener('load', adjustMiddleContentHeight);
 window.addEventListener('resize', adjustMiddleContentHeight);
+
+
+
+
+
+
+document.addEventListener('DOMContentLoaded', () => {
+  const updateDayElement = document.querySelector('.update-day');
+  const datePopup = document.querySelector('#date-popup');
+  const datePicker = document.querySelector('#date-picker');
+  const submitDateButton = document.querySelector('#submit-date');
+  const cancelDateButton = document.querySelector('#cancel-date');
+
+  // 날짜 범위 정의
+  const minDate = new Date('2020-01-04');
+  const maxDate = new Date('2024-11-16');
+
+  // 1. .update-day 클릭 시 #date-popup의 hidden 클래스를 토글
+  updateDayElement.addEventListener('click', () => {
+      // 팝업이 열려 있으면 외부 클릭 이벤트 등록
+      datePopup.classList.toggle('hidden');
+      if (!datePopup.classList.contains('hidden')) {
+          document.addEventListener('click', handleOutsideClick);
+      }
+  });
+
+  // 2. #submit-date 클릭 시 서버로 선택된 날짜 전송
+  submitDateButton.addEventListener('click', () => {
+      const selectedDate = datePicker.value;
+
+      if (!selectedDate) {
+          alert('날짜를 선택해주세요.');
+          return;
+      }
+
+      const selectedDateObj = new Date(selectedDate);
+
+      // 선택된 날짜가 범위를 벗어났는지 확인
+      if (selectedDateObj < minDate || selectedDateObj > maxDate) {
+          alert(`날짜는 ${minDate.toLocaleDateString()} 부터 ${maxDate.toLocaleDateString()} 까지 선택할 수 있습니다.`);
+          return;
+      }
+        // 서버로 날짜 전송 (GET 방식)
+      fetch(`/worldwide/data?date=${selectedDate}`)
+      .then(response => {
+          if (!response.ok) throw new Error('서버 요청 실패');
+          return response.json(); // JSON 응답을 반환받음
+      })
+      .then(data => {
+          console.log("서버로부터 받은 데이터:", data);
+          updateDOM(data); // 받은 데이터를 DOM에 반영
+          
+      })
+      .catch(error => {
+          console.error('에러 발생:', error);
+          alert('날짜 전송 중 오류가 발생했습니다.');
+      });
+
+
+      // 팝업 닫기
+      datePopup.classList.add('hidden');
+      document.removeEventListener('click', handleOutsideClick); // 외부 클릭 이벤트 제거
+  });
+
+  // 3. #cancel-date 클릭 시 팝업 닫기 및 외부 클릭 처리
+  cancelDateButton.addEventListener('click', (event) => {
+      event.stopPropagation(); // 부모 요소로의 이벤트 전파 방지
+      datePopup.classList.add('hidden');
+      document.removeEventListener('click', handleOutsideClick); // 외부 클릭 이벤트 제거
+  });
+
+  // 외부 클릭 시 팝업 닫기
+  function handleOutsideClick(event) {
+      if (!datePopup.contains(event.target) && !updateDayElement.contains(event.target)) {
+          datePopup.classList.add('hidden');
+          document.removeEventListener('click', handleOutsideClick); // 외부 클릭 이벤트 제거
+      }
+  }
+
+  // 4. #date-popup 내부 클릭 이벤트가 외부로 전파되지 않도록
+  datePopup.addEventListener('click', (event) => {
+      event.stopPropagation(); // 클릭 이벤트 전파 방지
+  });
+});
+function updateDOM(data) {
+  // 1. 업데이트 날짜
+  document.querySelector('.update-day p:nth-child(2)').textContent = `${data.date_reported} 11:00`;
+
+  // 2. 국가 리스트 업데이트
+  const countryList = document.querySelector('.country-list ul');
+  
+  // 3. 국가별 데이터 갱신
+  data.records.forEach((record, index) => {
+      // 국가별 감염률 찾기
+      const countryPercentage = data.country_percentages.find(
+          p => p.country === record.country
+      );
+
+      // 각 국가 항목 (li)에서 필요한 부분만 갱신
+      const listItem = countryList.children[index];
+
+      // 국가명, 감염률, 일간 현황, 누적 현황 갱신
+      listItem.querySelector('.country-name strong').textContent = record.country_korean;
+      listItem.querySelector('.country-name .country-english').textContent = record.country;
+      listItem.querySelector('.infection-rate span').textContent = `${countryPercentage ? countryPercentage.percentage : 0}%`;
+      listItem.querySelector('.daily-status span').innerHTML = `<strong>${record.new_cases.toLocaleString()}</strong> | ${record.new_deaths.toLocaleString()}`;
+      listItem.querySelector('.cumulative-status span').innerHTML = `<strong>${record.cumulative_cases.toLocaleString()}</strong> | ${record.cumulative_deaths.toLocaleString()}`;
+  });
+}
+
+
+
+
+document.addEventListener('DOMContentLoaded', function () {
+  // 탭 전환 로직
+  function setupTabs(tabs, contents) {
+    tabs.forEach((tab, index) => {
+      tab.addEventListener('click', () => {
+        // 모든 탭과 콘텐츠에서 활성화 제거
+        tabs.forEach(t => t.classList.remove('active'));
+        contents.forEach(c => c.classList.remove('active'));
+
+        // 선택된 탭과 해당 콘텐츠에 활성화 추가
+        tab.classList.add('active');
+        contents[index].classList.add('active');
+      });
+    });
+  }
+
+  // 버튼과 콘텐츠 선택
+  const tabButtons = [document.querySelector('.news'), document.querySelector('.test-btn')];
+  const tabContents = [document.querySelector('.crw'), document.querySelector('.test')];
+
+  // 탭 설정
+  setupTabs(tabButtons, tabContents);
+
+  // 토글 버튼 로직
+  function setupToggleButton(toggleButton, toggleClass) {
+    toggleButton.addEventListener('click', () => {
+      toggleButton.classList.toggle(toggleClass);
+      document.body.classList.toggle('dark-mode');
+      document.body.classList.toggle('light-mode');
+    });
+  }
+
+  // 토글 버튼 선택 및 설정
+  const toggleButton = document.querySelector('.toggle-button');
+  setupToggleButton(toggleButton, 'open');
+});
