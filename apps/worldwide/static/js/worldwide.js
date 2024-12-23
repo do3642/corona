@@ -163,14 +163,9 @@ function updateChange(selector, value) {
 
 
 // ----------------검색 기능
-document.getElementById('search-input').addEventListener('keydown', function(event) {
-  // 엔터 키가 눌렸을 때만 검색
-  if (event.key === 'Enter') {
-    searchCountries();
-  }
-});
-document.querySelector('.search-icon').addEventListener('click', function() {
-  // 검색 아이콘 클릭 시 검색
+// 폼 제출 시 검색 처리
+document.getElementById('search-form').addEventListener('submit', function(event) {
+  event.preventDefault();  // 기본 폼 제출 방지
   searchCountries();
 });
 document.getElementById('search-input').addEventListener('input', function() {
@@ -227,10 +222,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
       // markerData를 사용하여 마커 추가
       markerData.forEach(marker => {
+        const leafletMarker = L.marker([marker.lat, marker.lng])
+          .bindPopup(`<strong>${marker.country}</strong>`);
 
-          L.marker([marker.lat, marker.lng])
-              .bindPopup(`<strong>${marker.country}</strong>`)
-              .addTo(markerCluster);
+        // 마커 클릭 시 물결 효과 추가
+        leafletMarker.on('popupopen', function () {
+          createRippleEffect(leafletMarker);
+        });
+
+        markerCluster.addLayer(leafletMarker);
       });
 
       // GeoJSON 데이터 추가
@@ -491,7 +491,7 @@ function adjustMiddleContentHeight() {
   const mapBox = document.querySelector('#map-container');
 
   const dailyData = document.querySelector('.world-wide-daily');
-  const nav = document.querySelector('nav');
+  // const nav = document.querySelector('nav');
   const graphData = document.querySelector('.graph-box')
 
   const countryList = document.querySelector('.country-list ul');
@@ -501,8 +501,8 @@ function adjustMiddleContentHeight() {
 
   
   // 화면 전체 높이에서 헤더,일간현황,그래프의 높이를 뺀 값 계산
-  const availableHeight = window.innerHeight - nav.offsetHeight - dailyData.offsetHeight - graphData.offsetHeight - 25; // 50은 여유 마진값
-  const availableHeightLeft = window.innerHeight - nav.offsetHeight - updateBox.offsetHeight - searchBox.offsetHeight - 25;
+  const availableHeight = window.innerHeight  - dailyData.offsetHeight - graphData.offsetHeight - 25; // 50은 여유 마진값
+  const availableHeightLeft = window.innerHeight - updateBox.offsetHeight - searchBox.offsetHeight - 25;
   mapBox.style.height = `${availableHeight}px`;
   countryList.style.height = `${availableHeightLeft}px`;
 
@@ -628,6 +628,8 @@ function updateDOM(data) {
 
 
 document.addEventListener('DOMContentLoaded', function () {
+
+
   // 탭 전환 로직
   function setupTabs(tabs, contents) {
     tabs.forEach((tab, index) => {
@@ -651,15 +653,61 @@ document.addEventListener('DOMContentLoaded', function () {
   setupTabs(tabButtons, tabContents);
 
   // 토글 버튼 로직
-  function setupToggleButton(toggleButton, toggleClass) {
-    toggleButton.addEventListener('click', () => {
-      toggleButton.classList.toggle(toggleClass);
-      document.body.classList.toggle('dark-mode');
-      document.body.classList.toggle('light-mode');
+  function setupToggleButtons() {
+    // 모든 토글 버튼 선택
+    const toggleButtons = document.querySelectorAll('.toggle-button');
+    
+    toggleButtons.forEach((toggleButton) => {
+      let isRippleActive = false; // 리플 효과가 활성화되었는지 추적하는 변수
+
+
+      toggleButton.addEventListener('click', () => {
+        // data-action 속성을 사용하여 각 버튼의 동작을 다르게 설정
+        const action = toggleButton.dataset.action; // 예: 'dark-mode', 'light-mode', 'custom-action' 등
+        
+        // 예시로 각 동작을 처리
+        if (action === 'toggle-dark-light') {
+          // 다크 모드 / 라이트 모드 전환
+          document.body.classList.toggle('dark-mode');
+          document.body.classList.toggle('light-mode');
+
+        } else if (action === 'toggle-mouse-action') {
+          if (!isRippleActive) {
+            // 리플 효과 활성화
+            $('body').ripples({
+              dropRadius: 50,
+              perturbance: 0.04
+            });
+            isRippleActive = true; // 리플 효과 활성화 상태로 변경
+          } else {
+            // 리플 효과 비활성화
+            $('body').ripples('destroy'); // 리플 효과 제거
+            isRippleActive = false; // 리플 효과 비활성화 상태로 변경
+          }
+         
+        } else if (action === 'another-action') {
+          // 또 다른 동작
+          console.log('Another action triggered');
+          // 여기에 또 다른 동작을 정의
+        }
+        
+        // 각 버튼에 대해서 추가적인 동작을 더 추가할 수 있음
+        toggleButton.classList.toggle('open');
+      });
     });
   }
 
-  // 토글 버튼 선택 및 설정
-  const toggleButton = document.querySelector('.toggle-button');
-  setupToggleButton(toggleButton, 'open');
+  // 토글 버튼 설정
+  setupToggleButtons();
 });
+
+
+
+
+
+
+
+
+
+
+
