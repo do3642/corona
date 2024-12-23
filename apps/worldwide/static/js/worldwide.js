@@ -79,6 +79,7 @@ async function fetchCovidData(dateType) {
     updateCovidData(data);
   } catch (error) {
     console.error("Error fetching data:", error);
+    console.log("fetchCovidData함수를 통해 데이터 호출 실패했습니다.")
   }
 }
 
@@ -671,6 +672,9 @@ document.addEventListener('DOMContentLoaded', function () {
          
         } else if (action === 'toggle-cursor-action') {
           toggleCursorEffect();
+
+        } else if (action === 'toggle-btn-action'){
+          
         }
         
         // 각 버튼에 대해서 추가적인 동작을 더 추가할 수 있음
@@ -779,6 +783,9 @@ class PointerParticles extends HTMLElement {
     // 부모 요소가 있을 때만 setCanvasDimensions을 호출
     if (this.parentNode) {
       this.setCanvasDimensions();  // 캔버스 크기 설정
+    } else {
+      // 부모 요소가 없을 때 처리 (예: 일시적인 대기 후 재시도)
+      this.observeParentNode();  // 부모 요소가 추가되면 크기 설정
     }
     this.setupEvents();  // 이벤트 설정
     this.timePrevious = performance.now();  // 현재 시간 기록
@@ -789,6 +796,17 @@ class PointerParticles extends HTMLElement {
     const rect = this.parentNode ? this.parentNode.getBoundingClientRect() : { width: 0, height: 0 };
     this.canvas.width = rect.width;
     this.canvas.height = rect.height;
+  }
+  observeParentNode() {
+    const observer = new MutationObserver(() => {
+      if (this.parentNode) {
+        this.setCanvasDimensions();  // 부모 노드가 추가되면 크기 설정
+        observer.disconnect();  // 부모 노드가 설정되면 관찰 종료
+      }
+    });
+  
+    // 부모 노드가 추가되는 변화를 관찰
+    observer.observe(this, { childList: true, subtree: true });
   }
 
 
