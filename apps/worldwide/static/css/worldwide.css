@@ -669,7 +669,31 @@ body.light-mode .country-list ul li p.cumulative-status span{
   border-radius: 15px;
 }
 
+/* Ripple Effect 기본 스타일 */
+.ripple-effect {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  background-color: rgba(0, 123, 255, 0.4); /* 파란색 반투명 */
+  border-radius: 50%;
+  pointer-events: none;
+  transform: translate(-50%, -50%) scale(1);
+  animation: ripple-animation 1.5s ease-out infinite;
+}
 
+/* Ripple Effect 애니메이션 */
+@keyframes ripple-animation {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(10); /* 물결 확장 */
+    opacity: 0; /* 사라짐 */
+  }
+}
 
 /* ################# */
 

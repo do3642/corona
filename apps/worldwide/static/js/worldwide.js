@@ -206,116 +206,100 @@ function showAllCountries() {
 // 국가리스트 클릭 시 서버에 국가명을 보내고 지도값을 받아 html에 적용
 
 document.addEventListener('DOMContentLoaded', function () {
-  // fetch로 markerData 받아오기
-  fetch('/worldwide/request/marker-data')
-    .then(response => response.json())
-    .then(markerData => {
-      const map = L.map('map-container');
-      map.setView([20, 0], 2);
-
+  // 데이터를 병렬로 fetch
+  Promise.all([
+    fetch('/worldwide/request/marker-data').then(res => res.json()),
+    fetch('/worldwide/static/data/world_countries.json').then(res => res.json()),
+  ])
+    .then(([markerData, geojsonData]) => {
+      // 맵 초기화
+      const map = L.map('map-container').setView([20, 0], 2);
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          maxZoom: 19,
-          attribution: '© OpenStreetMap contributors',
+        maxZoom: 19,
+        attribution: '© OpenStreetMap contributors',
       }).addTo(map);
 
+      // 마커 클러스터 추가
       const markerCluster = L.markerClusterGroup().addTo(map);
-
-      // markerData를 사용하여 마커 추가
       markerData.forEach(marker => {
-        const leafletMarker = L.marker([marker.lat, marker.lng])
-          .bindPopup(`<strong>${marker.country}</strong>`);
-
-        // 마커 클릭 시 물결 효과 추가
-        leafletMarker.on('popupopen', function () {
-          createRippleEffect(leafletMarker);
-        });
-
+        const leafletMarker = L.marker([marker.lat, marker.lng]).bindPopup(`<strong>${marker.country}</strong>`);
+        leafletMarker.on('popupopen', () => createRippleEffect(leafletMarker));
         markerCluster.addLayer(leafletMarker);
       });
 
-      // GeoJSON 데이터 추가
-      fetch('/worldwide/static/data/world_countries.json')
-        .then(response => response.json())
-        .then(geojsonData => {
-            const geojsonLayer = L.geoJson(geojsonData, {
-                style: {
-                    color: 'transparent',
-                    weight: 2,
-                    opacity: 0,
-                    fillOpacity: 0.3,
-                },
-                onEachFeature: function (feature, layer) {
-                    const countryName = feature.properties.name_ko || feature.properties.sovereignt || feature.properties.name;
-                    layer.bindPopup(`<strong>${countryName}</strong>`);
-                },
-            }).addTo(map);
+      // GeoJSON 레이어 추가
+      const geojsonLayer = L.geoJson(geojsonData, {
+        style: {
+          color: 'transparent',
+          weight: 2,
+          opacity: 0,
+          fillOpacity: 0.3,
+        },
+        onEachFeature: (feature, layer) => {
+          const countryName = feature.properties.name_ko || feature.properties.sovereignt || feature.properties.name;
+          layer.bindPopup(`<strong>${countryName}</strong>`);
+          layer.on('popupopen', () => createRippleEffect(layer));
+        },
+      }).addTo(map);
 
-            // 국가 리스트 클릭 시 해당 국가로 이동 및 색칠
-            const countryListItems = document.querySelectorAll('.country-list li');
-            countryListItems.forEach(item => {
-                item.addEventListener('click', function () {
-                    const lat = parseFloat(item.getAttribute('data-lat'));
-                    const lng = parseFloat(item.getAttribute('data-lng'));
-                    const countryName = item.getAttribute('data-country').trim();  // 공백 제거
+      // 국가 리스트 클릭 이벤트
+      const countryListItems = document.querySelectorAll('.country-list li');
+      countryListItems.forEach(item => {
+        item.addEventListener('click', () => {
+          const lat = parseFloat(item.dataset.lat);
+          const lng = parseFloat(item.dataset.lng);
+          const countryName = item.dataset.country.trim();
 
-                    if (!lat || !lng || !countryName) {
-                        console.error("Invalid country data:", item);
-                        return;
-                    }
+          if (!lat || !lng || !countryName) {
+            console.error("Invalid country data:", item);
+            return;
+          }
 
-                    map.flyTo([lat, lng], 5);
-
-                    geojsonLayer.eachLayer(function (layer) {
-                        const geoJsonCountry = layer.feature.properties.sovereignt || layer.feature.properties.name;
-                        const geoJsonNameLong = layer.feature.properties.name_long || '';
-                        const geoJsonFormalEn = layer.feature.properties.formal_en || '';
-                        const geoJsonNameCiawf = layer.feature.properties.name_ciawf || '';
-                        const geoJsonBrkName = layer.feature.properties.brk_name || '';
-                        const geoJsonNameKo = layer.feature.properties.name_ko || '';
-                        const geoJsonNamePt = layer.feature.properties.name_pt || '';  // 추가된 속성
-
-                        if (!geoJsonCountry) {
-                            console.warn("GeoJSON data missing country name:", layer.feature);
-                            return;
-                        }
-
-                        // 클릭한 국가명에서 괄호를 제거
-                        const normalizedCountryName = countryName.trim().toLowerCase().replace(/\(.*\)/, '').trim();
-                        
-                        // GeoJSON 데이터 속성들 비교
-                        const isClickedCountry = [
-                            geoJsonCountry,
-                            geoJsonNameLong,
-                            geoJsonFormalEn,
-                            geoJsonNameCiawf,
-                            geoJsonBrkName,
-                            geoJsonNameKo,
-                            geoJsonNamePt  // 비교 항목에 name_pt 추가
-                        ].some(name => name.toLowerCase().replace(/\(.*\)/, '').trim() === normalizedCountryName);
-
-                        if (isClickedCountry) {
-                            layer.setStyle({
-                                fillColor: 'orange',
-                                fillOpacity: 0.5,
-                                color: 'red',
-                                weight: 3
-                            });
-                            layer.openPopup();
-                        } else {
-                            layer.setStyle({
-                                fillColor: 'transparent',
-                                fillOpacity: 0.3,
-                                color: 'transparent',
-                                weight: 2
-                            });
-                        }
-                    });
-                });
+          map.flyTo([lat, lng], 5);
+          geojsonLayer.eachLayer(layer => {
+            const countryProps = layer.feature.properties;
+            const possibleNames = [
+              countryProps.sovereignt,
+              countryProps.name,
+              countryProps.name_long,
+              countryProps.formal_en,
+              countryProps.name_ciawf,
+              countryProps.brk_name,
+              countryProps.name_ko,
+              countryProps.name_pt,
+            ].filter(Boolean); // null/undefined 속성 제거
+           
+            const normalizedCountryName = countryName.toLowerCase().replace(/\(.*\)/, '').trim();
+          
+            const isClickedCountry = possibleNames.some(name =>
+              name.toLowerCase().replace(/\(.*\)/, '').trim() === normalizedCountryName
+            );
+            
+          
+            layer.setStyle({
+              fillColor: isClickedCountry ? 'orange' : 'transparent',
+              fillOpacity: isClickedCountry ? 0.5 : 0.3,
+              color: isClickedCountry ? 'red' : 'transparent',
+              weight: isClickedCountry ? 3 : 2,
             });
-        })
-        .catch(error => console.error("Error fetching GeoJSON data:", error));
+          
+            if (isClickedCountry) layer.openPopup();
+          });
+        });
+      });
     })
-    .catch(error => console.error("Error fetching marker data:", error));
+    .catch(error => console.error("Error fetching data:", error));
+
+  // 팝업에 물결 효과를 추가하는 함수
+  function createRippleEffect(target) {
+    const popupContainer = target.getPopup().getElement();
+    if (!popupContainer.querySelector('.ripple-effect')) {
+      const ripple = document.createElement('div');
+      ripple.classList.add('ripple-effect');
+      ripple.addEventListener('animationend', () => ripple.remove());
+      popupContainer.appendChild(ripple);
+    }
+  }
 });
 
 
@@ -685,10 +669,8 @@ document.addEventListener('DOMContentLoaded', function () {
             isRippleActive = false; // 리플 효과 비활성화 상태로 변경
           }
          
-        } else if (action === 'another-action') {
-          // 또 다른 동작
-          console.log('Another action triggered');
-          // 여기에 또 다른 동작을 정의
+        } else if (action === 'toggle-cursor-action') {
+          toggleCursorEffect();
         }
         
         // 각 버튼에 대해서 추가적인 동작을 더 추가할 수 있음
@@ -701,13 +683,231 @@ document.addEventListener('DOMContentLoaded', function () {
   setupToggleButtons();
 });
 
+// 개별 파티클을 처리하는 클래스
+class PointerParticle {
+  constructor(spread, speed, component) {
+    const { ctx, pointer, hue } = component;
+
+    // 파티클의 기본 속성 초기화
+    this.ctx = ctx;  // 캔버스의 2D 컨텍스트
+    this.x = pointer.x;  // 마우스 X 좌표
+    this.y = pointer.y;  // 마우스 Y 좌표
+    this.mx = pointer.mx * 0.1;  // 마우스 이동 X 속도 (감쇠)
+    this.my = pointer.my * 0.1;  // 마우스 이동 Y 속도 (감쇠)
+    this.size = Math.random() + 1;  // 랜덤 크기 설정
+    this.decay = 0.01;  // 파티클 크기 감소값
+    this.speed = speed * 0.08;  // 속도 설정
+    this.spread = spread * this.speed;  // 확산 정도
+    this.spreadX = (Math.random() - 0.5) * this.spread - this.mx;  // X 방향으로의 확산
+    this.spreadY = (Math.random() - 0.5) * this.spread - this.my;  // Y 방향으로의 확산
+    this.color = `hsl(${hue}deg 90% 60%)`;  // 색상 설정 (HSL)
+  }
+
+  // 파티클을 그리는 메소드
+  draw() {
+    this.ctx.fillStyle = this.color;  // 색상 설정
+    this.ctx.beginPath();  // 경로 시작
+    this.ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);  // 원을 그리기
+    this.ctx.fill();  // 채우기
+  }
+
+  // 파티클의 크기를 감소시키는 메소드
+  collapse() {
+    this.size -= this.decay;  // 크기 감소
+  }
+
+  // 파티클의 이동 경로를 설정하는 메소드
+  trail() {
+    this.x += this.spreadX * this.size;  // X 방향으로 이동
+    this.y += this.spreadY * this.size;  // Y 방향으로 이동
+  }
+
+  // 파티클을 업데이트하는 메소드 (그리기, 이동, 크기 감소)
+  update() {
+    this.draw();  // 파티클 그리기
+    this.trail();  // 파티클 이동
+    this.collapse();  // 파티클 크기 감소
+  }
+}
+
+// PointerParticles 컴포넌트 클래스 (커스텀 HTML 엘리먼트)
+class PointerParticles extends HTMLElement {
+  // 커스텀 엘리먼트를 등록하는 메소드
+  static register(tag = "pointer-particles") {
+    if ("customElements" in window) {
+      customElements.define(tag, this);
+    }
+  }
+
+  // CSS 스타일 (shadow DOM에서 사용할 스타일)
+  static css = `
+    :host {
+      display: grid;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;  // 마우스 이벤트를 캔버스로 전달
+    }
+  `;
+
+  // 생성자에서 초기 설정
+  constructor() {
+    super();
+
+    // 초기화할 속성들
+    this.canvas;
+    this.ctx;
+    this.fps = 60;  // FPS (초당 프레임 수)
+    this.msPerFrame = 1000 / this.fps;  // 한 프레임에 소요되는 시간
+    this.timePrevious;
+    this.particles = [];  // 생성된 파티클을 저장할 배열
+    this.pointer = { x: 0, y: 0, mx: 0, my: 0 };  // 마우스 좌표 및 이동 속도
+    this.hue = 0;  // 색상
+  }
+
+  // 컴포넌트가 DOM에 연결되었을 때 호출되는 메소드
+  connectedCallback() {
+    const canvas = document.createElement("canvas");  // 캔버스 생성
+    const sheet = new CSSStyleSheet();  // 스타일 시트 생성
+
+    this.shadowroot = this.attachShadow({ mode: "open" });  // shadow DOM을 열어서 스타일을 적용
+    sheet.replaceSync(PointerParticles.css);  // CSS 적용
+    this.shadowroot.adoptedStyleSheets = [sheet];  // 스타일 시트를 shadow DOM에 적용
+    this.shadowroot.append(canvas);  // 캔버스 추가
+
+    this.canvas = this.shadowroot.querySelector("canvas");  // 캔버스를 가져오기
+    this.ctx = this.canvas.getContext("2d");  // 2D 렌더링 컨텍스트 가져오기
+    // 부모 요소가 있을 때만 setCanvasDimensions을 호출
+    if (this.parentNode) {
+      this.setCanvasDimensions();  // 캔버스 크기 설정
+    }
+    this.setupEvents();  // 이벤트 설정
+    this.timePrevious = performance.now();  // 현재 시간 기록
+    this.animateParticles();  // 애니메이션 시작
+  }
+  setCanvasDimensions() {
+    // 부모 요소가 있을 때만 getBoundingClientRect를 호출
+    const rect = this.parentNode ? this.parentNode.getBoundingClientRect() : { width: 0, height: 0 };
+    this.canvas.width = rect.width;
+    this.canvas.height = rect.height;
+  }
 
 
+  // 파티클 생성하는 메소드
+  createParticles(event, { count, speed, spread }) {
+    this.setPointerValues(event);  // 마우스 좌표 및 속도 설정
 
+    // 지정된 수의 파티클 생성
+    for (let i = 0; i < count; i++) {
+      this.particles.push(new PointerParticle(spread, speed, this));  // 새로운 파티클 생성
+    }
+  }
 
+  // 마우스 좌표 및 속도 설정하는 메소드
+  setPointerValues(event) {
+    this.pointer.x = event.x - this.offsetLeft;  // 마우스 X 좌표
+    this.pointer.y = event.y - this.offsetTop;  // 마우스 Y 좌표
+    this.pointer.mx = event.movementX;  // 마우스 X 이동 속도
+    this.pointer.my = event.movementY;  // 마우스 Y 이동 속도
+  }
 
+  // 마우스 이벤트 설정 (클릭, 이동 등)
+  setupEvents() {
+    const parent = this.parentNode;  // 부모 요소
 
+    parent.addEventListener("click", (event) => {
+      this.createParticles(event, {
+        count: 300,  // 생성할 파티클 수
+        speed: Math.random() + 1,  // 파티클 속도 (랜덤)
+        spread: Math.random() + 50  // 파티클 확산 범위 (랜덤)
+      });
+    });
 
+    // 마우스 이동 이벤트
+    parent.addEventListener("pointermove", (event) => {
+      this.createParticles(event, {
+        count: 20,  // 생성할 파티클 수
+        speed: this.getPointerVelocity(event),  // 파티클 속도
+        spread: 1  // 파티클 확산 범위
+      });
+    });
 
+    // 윈도우 크기 변경 시 캔버스 크기 조정
+    window.addEventListener("resize", () => this.setCanvasDimensions());
+  }
 
+  // 마우스 속도 계산하는 메소드
+  getPointerVelocity(event) {
+    const a = event.movementX;  // X 방향 이동량
+    const b = event.movementY;  // Y 방향 이동량
+    const c = Math.floor(Math.sqrt(a * a + b * b));  // 속도 계산 (Pythagorean theorem)
 
+    return c;  // 속도 반환
+  }
+
+  // 파티클들을 처리하는 메소드 (업데이트)
+  handleParticles() {
+    for (let i = 0; i < this.particles.length; i++) {
+      this.particles[i].update();  // 각 파티클 업데이트
+
+      // 크기가 0.1 이하인 파티클은 삭제
+      if (this.particles[i].size <= 0.1) {
+        this.particles.splice(i, 1);  // 배열에서 파티클 제거
+        i--;  // 인덱스 조정
+      }
+    }
+  }
+
+  // 캔버스 크기 설정
+  setCanvasDimensions() {
+    const rect = this.parentNode.getBoundingClientRect();  // 부모 요소의 크기 계산
+
+    this.canvas.width = rect.width;  // 캔버스 너비 설정
+    this.canvas.height = rect.height;  // 캔버스 높이 설정
+  }
+
+  // 파티클 애니메이션 메소드
+  animateParticles() {
+    requestAnimationFrame(() => this.animateParticles());  // 다음 프레임 요청
+
+    const timeNow = performance.now();  // 현재 시간
+    const timePassed = timeNow - this.timePrevious;  // 이전 시간과의 차이
+
+    if (timePassed < this.msPerFrame) return;  // 프레임 시간보다 빠르면 종료
+
+    const excessTime = timePassed % this.msPerFrame;  // 초과 시간 계산
+    this.timePrevious = timeNow - excessTime;  // 이전 시간 갱신
+
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);  // 캔버스 클리어
+    this.hue = this.hue > 360 ? 0 : (this.hue += 3);  // 색상 변경
+
+    this.handleParticles();  // 파티클 처리
+  }
+}
+
+// // PointerParticles 컴포넌트를 등록
+// PointerParticles.register();
+// PointerParticles 컴포넌트를 등록
+PointerParticles.register();  // 이 부분을 추가하세요.
+
+// 마우스 커서 효과 활성화 함수
+function toggleCursorEffect() {
+  const existingParticles = document.querySelector('pointer-particles');
+
+  if (existingParticles) {
+    // 이미 존재하면, 효과를 비활성화 (삭제)
+    existingParticles.remove();
+  } else {
+    // PointerParticles 커스텀 엘리먼트를 생성
+    const particlesElement = document.createElement('pointer-particles');
+    
+    // particlesElement의 스타일 추가
+    particlesElement.style.position = 'absolute';
+    particlesElement.style.top = '0';
+    particlesElement.style.left = '0';
+    particlesElement.style.width = '100%';
+    particlesElement.style.height = '100%';
+    particlesElement.style.pointerEvents = 'none';  // 마우스 이벤트를 캔버스로 전달
+    
+    document.body.appendChild(particlesElement); // body에 추가
+  }
+}
