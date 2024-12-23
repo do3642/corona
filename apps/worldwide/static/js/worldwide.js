@@ -163,14 +163,9 @@ function updateChange(selector, value) {
 
 
 // ----------------검색 기능
-document.getElementById('search-input').addEventListener('keydown', function(event) {
-  // 엔터 키가 눌렸을 때만 검색
-  if (event.key === 'Enter') {
-    searchCountries();
-  }
-});
-document.querySelector('.search-icon').addEventListener('click', function() {
-  // 검색 아이콘 클릭 시 검색
+// 폼 제출 시 검색 처리
+document.getElementById('search-form').addEventListener('submit', function(event) {
+  event.preventDefault();  // 기본 폼 제출 방지
   searchCountries();
 });
 document.getElementById('search-input').addEventListener('input', function() {
@@ -666,72 +661,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
 
-let sphereObj;
-let font;
 
-function preload() {
-  // 외부 폰트 로드 (URL로 로드)
-  font = loadFont('https://cdnjs.cloudflare.com/ajax/libs/akar-icons-fonts/1.1.22/fonts/akar-icons.ttf');  
-}
 
-function setup() {
-    let canvas = createCanvas(150, 150, WEBGL);  // 3D 캔버스 생성
-    canvas.parent('p5-canvas');  // nav 내에 캔버스를 추가
 
-    // 조명 추가
-    ambientLight(255);  // 주변광 설정 (흰색)
-    pointLight(255, 255, 255, 100, -100, 200);  // 점광원 설정 (하얀색)
-    
-    // 구체 객체 생성
-    sphereObj = new Sphere();  // Sphere 객체 생성
-}
 
-function draw() {
-    background(0);  // 배경을 검정색으로 설정
 
-    // 회전 애니메이션 (구체가 회전하도록)
-    rotateX(frameCount * 0.01);  
-    rotateY(frameCount * 0.01);  
 
-    // 구체 그리기
-    sphereObj.show();  // 구체를 그리기
 
-    // 폰트가 로드된 후 텍스트 그리기
-    if (font) {
-        push();
-        rotateY(frameCount * 0.05);  // 텍스트를 회전시켜서 보기 좋게 만듦
-        textSize(16);
-        fill(255, 255, 0);  // 노란색 텍스트
-        textFont(font);
-        textAlign(CENTER, CENTER);
-        text('국내 페이지', 0, 0);  // 구체 위에 '국내 페이지' 텍스트 표시
-        pop();
-    }
-}
 
-// Sphere 객체 생성
-class Sphere {
-    constructor() {
-        this.x = 0;
-        this.y = 0;
-        this.z = 0;
-        this.diameter = 80;  // 구체의 크기
-    }
-
-    show() {
-        noStroke();
-        
-        // 그라데이션 느낌의 색상 적용
-        let col1 = color(0, 102, 204); // 파란색
-        let col2 = color(255, 204, 0); // 노란색
-
-        // 그라데이션 효과를 위해 점차적인 색상 적용
-        for (let i = -HALF_PI; i < HALF_PI; i += PI / 10) {
-            push();
-            rotateX(i);
-            ambientMaterial(lerpColor(col1, col2, (i + HALF_PI) / PI));  // 색상 그라데이션
-            sphere(this.diameter);  // 구체 그리기
-            pop();
-        }
-    }
-}

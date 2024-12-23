@@ -1,15 +1,77 @@
 @import url("common.css");
 
 
+
+/* 기본 스타일 */
 nav {
   position: fixed;
-  right: 5%;
   bottom: 5%;
+  right: 5%;
   z-index: 1000;
+  width: 180px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: end;
+}
+
+.icon-button {
+  background-color: #3c2a74;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  padding: 20px;
   cursor: pointer;
-  width: 150px;
-  height: 150px;
-  background-color: #fff;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  width: 80px; /* 초기 크기 */
+  height: 80px; /* 초기 크기 */
+}
+
+.icon-button i {
+  font-size: 1.8em;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%,-50%);
+}
+
+/* 텍스트 기본 상태 */
+.button-text {
+  color: white;
+  font-size: .9em;
+  margin-left: 10px;
+  opacity: 0; /* 초기에는 숨김 */
+  transform: translateX(20px); /* 초기 위치는 오른쪽으로 밀어둠 */
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  white-space: nowrap; /* 텍스트가 한 줄로 표시되도록 */
+  visibility: hidden; /* 텍스트를 보이지 않게 설정 */
+  font-family: 'GmarketSansMedium';
+
+}
+
+/* Hover 상태 */
+nav:hover .icon-button{
+  border-radius: 10px;
+  width: 180px; /* 버튼 가로 길이 확장 */
+  height: 40px; /* 버튼 높이 조정 */
+}
+
+nav:hover .icon-button i {
+  font-size:1em;
+  position: relative;
+  left: 0;top: 0;
+  transform: translate(0,0);
+}
+
+nav:hover .icon-button .button-text {
+  opacity: 1; /* 텍스트가 보이게 함 */
+  transform: translateX(0); /* 텍스트가 오른쪽에서 왼쪽으로 슬라이드 */
+  visibility: visible; /* 텍스트를 보이게 설정 */
 }
 
 
@@ -86,7 +148,7 @@ body.light-mode .update-day:hover {
 .update-day[data-tooltip]:hover::after {
   content: attr(data-tooltip); /* data-tooltip 속성 내용 */
   position: absolute;
-  top: -30px;  /* 마우스 위쪽에 표시 */
+  top: 90%; 
   left: 50%;
   transform: translateX(-50%);
   background: var(--bg-color);
@@ -195,7 +257,9 @@ body.light-mode .update-day:hover {
 }
 .search-icon{
   position: absolute; left: 0;top: 0;
-  transform: translate(50%,60%);
+  transform: translate(50%,35%);
+  border: none;
+  background: none;
 }
 
 .search-box input::placeholder {
@@ -210,7 +274,7 @@ body.light-mode .update-day:hover {
   color: #666; /* 더 짙은 색상 */
 }
 .search-box:hover .search-icon{
-  transform: translate(50%, 60%) rotate(360deg);
+  transform: translate(50%, 35%) rotate(360deg);
   transition: transform 0.5s ease;
 }
 
