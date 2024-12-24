@@ -144,6 +144,77 @@ def region(area):
   
   area_info = {area: filtered_total.to_dict(orient='records')}
 
+  # 지역 중심 좌표 데이터 가져오기
+  with open('apps/static/data/center_coords.json', 'r', encoding='utf-8') as f:
+    center_coords = json.load(f)
+
+  region_center = center_coords.get(area)
+  if not region_center:
+    region_center = [35.75, 128.00025]
+
+  # 지도를 해당 지역으로 줌인
+  map = folium.Map(location=region_center, zoom_start=9)
+
+  geojson_path = 'apps/static/data/korea.json'
+
+  with open(geojson_path, 'r', encoding='utf-8') as f:
+    geo_json_data = json.load(f)
+
+  geojson = folium.GeoJson(geo_json_data)
+
+  # 현재 지역만 필터링하여 GeoJSON 데이터 추출
+  target_feature = None
+  for feature in geo_json_data['features']:
+    if feature['properties']['CTP_KOR_NM'] == area:
+      target_feature = feature
+      break
+
+  if target_feature:
+    geojson = folium.GeoJson({
+      'type': 'FeatureCollection',
+      'features': [target_feature]
+    })
+  else:
+    geojson = folium.GeoJson({
+      'type': 'FeatureCollection',
+      'features': []
+    })
+
+  # GeoJson에서 툴팁 기능과 강조 스타일 추가
+  folium.GeoJson(
+      geo_json_data,
+      name='지역별 데이터',
+      highlight_function=None,
+      style_function=lambda feature: {
+          'weight': 0.1,
+          'color': 'transparent',
+      },
+      popup=None
+  ).add_to(map)
+
+  # 특정 지역을 자동으로 강조하는 JavaScript 코드 추가
+  if area:  # 지역이 존재하면
+      highlight_js = f"""
+      var targetArea = "{area}";  // 자동 강조할 지역 이름
+      var geojsonLayer = {geojson._name};
+      geojsonLayer.eachLayer(function(layer) {{
+          if (layer.feature.properties.CTP_KOR_NM === targetArea) {{
+              layer.setStyle({{
+                  weight: 10,
+                  color: 'orange',
+                  fillOpacity: 0.4,
+              }});
+              layer.bringToFront();
+          }}
+      }});
+      """
+      map.get_root().html.add_child(folium.Element(f"<script>{highlight_js}</script>"))
+
+  geojson.add_to(map)
+
+  map_html = map._repr_html_()
+
+
   # 줄임말로 시도명이 이루어진 api에서 맞는 데이터를 가져오기 위해 지역 이름 변환
   if area in ["충청북도", "충청남도", "전라북도", "전라남도", "경상북도", "경상남도"]:
     short_area = area[0] + area[2]
@@ -194,6 +265,7 @@ def region(area):
 
   return render_template(
     'domestic/index.html', 
+    map_html=map_html,
     area=area, area_info=area_info, 
     articles=articles, 
     hospitals=hospitals,
