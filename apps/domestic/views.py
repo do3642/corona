@@ -6,7 +6,6 @@ import requests
 from bs4 import BeautifulSoup
 import json
 import xmltodict
-from geopy.geocoders import Nominatim
 
 from apps.domestic.data import sheet_data
 
@@ -20,6 +19,7 @@ bp = Blueprint(
 # JSON 파일에서 지역별 중심 좌표 로드
 with open('apps/static/data/center_coords.json', 'r', encoding='utf-8') as f:
   center_coords = json.load(f)
+  
 
 # 어떤 url에서든지 다 들어갈 자료들
 def common_data(area=None):
@@ -144,7 +144,7 @@ def region(area):
   
   area_info = {area: filtered_total.to_dict(orient='records')}
 
-  # 줄임말로 시도명이 이루어진 api에서 맞는 데이터를 가져오기 위한 지역 이름 변환
+  # 줄임말로 시도명이 이루어진 api에서 맞는 데이터를 가져오기 위해 지역 이름 변환
   if area in ["충청북도", "충청남도", "전라북도", "전라남도", "경상북도", "경상남도"]:
     short_area = area[0] + area[2]
   else:
@@ -162,11 +162,51 @@ def region(area):
       items = [items]
 
     hospitals = [
-      {'name': item.get('hospitalNm'), 'tel': item.get('hospitalTel'), 'url': f"https://map.naver.com/p/search/{item.get('hospitalNm')}?c=16.50,0,0,0,dh"}
+      {'name': item.get('hospitalNm'), 'tel': item.get('hospitalTel'), 'url': f"https://map.naver.com/p/search/{item.get('hospitalNm')}"}
        for item in items
     ]
 
   except KeyError:
     hospitals = []
 
-  return render_template('domestic/index.html', area=area, area_info=area_info, articles=articles, hospitals=hospitals)
+  # 페이지네이션 관련 계산
+  page1 = request.args.get('page1', type=int, default=1)
+  page2 = request.args.get('page2', type=int, default=1)
+
+  per_page = 10
+  block_size = 3
+
+  # 지역 데이터 표 페이지네이션
+  offset = (page1 - 1) * per_page
+  area_paging_items = area_info[area][offset:offset + per_page]
+
+  area_total_pages = (len(area_info[area]) + per_page - 1) // per_page
+  area_group_start = ((page1 - 1) // block_size) * block_size + 1
+  area_group_end = min(area_group_start + block_size - 1, area_total_pages)
+
+  # 병원 데이터 표 페이지네이션
+  offset2 = (page2 - 1) * per_page
+  hospital_paging_items = hospitals[offset2:offset2 + per_page]
+
+  hospital_total_pages = (len(hospitals) + per_page - 1) // per_page
+  hospital_group_start = ((page2 - 1) // block_size) * block_size + 1
+  hospital_group_end = min(hospital_group_start + block_size - 1, hospital_total_pages)
+
+  return render_template(
+    'domestic/index.html', 
+    area=area, area_info=area_info, 
+    articles=articles, 
+    hospitals=hospitals,
+    page1=page1,
+    page2=page2,
+    area_paginated=area_paging_items,
+    hospital_paginated=hospital_paging_items,
+    area_group_start=area_group_start,
+    area_group_end=area_group_end,
+    area_prev_block=area_group_start > 1,
+    area_next_block=area_group_end < area_total_pages,
+    hospital_group_start=hospital_group_start,
+    hospital_group_end=hospital_group_end,
+    hospital_prev_block=hospital_group_start > 1,
+    hospital_next_block=hospital_group_end < hospital_total_pages
+    )

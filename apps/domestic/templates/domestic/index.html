@@ -51,7 +51,7 @@
         <th>발생률<br>(인구10만명당, 명)</th>
         <th>사망률<br>(인구10만명당, 명)</th>
       </tr>
-      {% for row in area_info[area] %}
+      {% for row in area_paginated %}
       <tr>
         <td>{{ row['시군구'] }}</td>
         <td>{{ row['누적확진자(명)'] }}</td>
@@ -62,24 +62,29 @@
       {% endfor %}
     </table>
 
-    <nav aria-label="Page navigation example">
+    <!-- 지역 데이터 페이지네이션 -->
+    <nav aria-label="Area pagination">
       <ul class="pagination">
-        <li class="page-item">
-          <a class="page-link" href="#" aria-label="Previous">
-            <span aria-hidden="true">&laquo;</span>
+        <li class="page-item {% if not area_prev_block %}disabled{% endif %}">
+            <a class="page-link" href="?page1={{ area_group_start - 1 }}&page2={{ page2 }}"
+              {% if not area_prev_block %}tabindex="-1" aria-disabled="true"{% endif %}>
+            이전</a>
+        </li>
+        {% for num in range(area_group_start, area_group_end + 1) %}
+        <li class="page-item {% if num == page1 %}active{% endif %}">
+            <a class="page-link" href="?page1={{ num }}&page2={{ page2 }}">{{ num }}</a>
+        </li>
+        {% endfor %}
+        {% if area_next_block %}
+        <li class="page-item {% if not area_next_block %}disabled{% endif %}">
+          <a class="page-link" href="?page1={{ area_group_end + 1 }}&page2={{ page2 }}"
+            {% if not hospital_next_block %}tabindex="-1" aria-disabled="true"{% endif %}>
+          다음
           </a>
         </li>
-        <li class="page-item"><a class="page-link" href="#">1</a></li>
-        <li class="page-item"><a class="page-link" href="#">2</a></li>
-        <li class="page-item"><a class="page-link" href="#">3</a></li>
-        <li class="page-item">
-          <a class="page-link" href="#" aria-label="Next">
-            <span aria-hidden="true">&raquo;</span>
-          </a>
-        </li>
+        {% endif %}
       </ul>
     </nav>
-      
 
   </article>
 
@@ -94,7 +99,7 @@
         </thead>
         <tbody>
           {% if hospitals %}
-            {% for hospital in hospitals %}
+            {% for hospital in hospital_paginated %}
               <tr>
                 <td><a href="{{ hospital.url }}" target="_blank">{{ hospital.name }}</a></td>
                 <td>{{ hospital.tel }}</td>
@@ -107,6 +112,30 @@
           {% endif %}
         </tbody>
       </table>
+
+      <!-- 병원 데이터 페이지네이션 -->
+      <nav aria-label="Hospital pagination">
+        <ul class="pagination">
+          <li class="page-item {% if not hospital_prev_block %}disabled{% endif %}">
+            <a class="page-link" href="?page1={{ page1 }}&page2={{ hospital_group_start - 1 }}" 
+               {% if not hospital_prev_block %}tabindex="-1" aria-disabled="true"{% endif %}>
+              이전
+            </a>
+          </li>
+          {% for num in range(hospital_group_start, hospital_group_end + 1) %}
+          <li class="page-item {% if num == page2 %}active{% endif %}">
+              <a class="page-link" href="?page1={{ page1 }}&page2={{ num }}">{{ num }}</a>
+          </li>
+          {% endfor %}
+          <li class="page-item {% if not hospital_next_block %}disabled{% endif %}">
+            <a class="page-link" href="?page1={{ page1 }}&page2={{ hospital_group_end + 1 }}" 
+               {% if not hospital_next_block %}tabindex="-1" aria-disabled="true"{% endif %}>
+              다음
+            </a>
+          </li>
+        </ul>
+      </nav>
+
     </article>
 
 
