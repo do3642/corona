@@ -1,29 +1,11 @@
+// ----------------유틸리티 함수 (국가리스트 선택자)
+function getCountryListItems() {
+  return document.querySelectorAll('.country-list li'); // 국가 리스트 항목 가져오기
+}
 
-// 키워드: 전세계 일간현황, 최초 일간현황 데이터 삽입, 로딩svg삽입,셀렉트 항목 변경
-// 페이지 방문 시 작동할 기본세팅 (data불러오기)
-document.addEventListener('DOMContentLoaded', () => {
-  // 셀렉트 박스 오늘로 설정 (html에서도 선택되어 있지만 데이터 초기값 불러올라고 지정)
-  let selectedDateType = 'today';
-
-  // 날짜 선택 박스 이벤트 리스너 추가
-  const dateSelect = document.querySelector('#date-select');
-  dateSelect.addEventListener('change', async (event) => {
-    selectedDateType = event.target.value; // 선택한 날짜 가져오기
-  
-    // 모든 "로딩 중" 태그를 선택
-    const elementsToLoad = [
-      '.new-cases',
-      '.new-cases-change',
-      '.new-recoveries',
-      '.new-recoveries-change',
-      '.new-deaths',
-      '.new-deaths-change'
-    ];
-  
-    // 로딩 클래스 추가
-    elementsToLoad.forEach(selector => {
-      const element = document.querySelector(selector);
-      element.innerHTML = `
+// -----------------svg 리턴함수
+function getLoadingSVG() {
+  return `
       <svg version="1.1" id="loader-1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
         width="14px" height="14px" viewBox="0 0 40 40" enable-background="new 0 0 40 40" xml:space="preserve">
         <path opacity="0.2" fill="#000" d="M20.201,5.169c-8.254,0-14.946,6.692-14.946,14.946c0,8.255,6.692,14.946,14.946,14.946
@@ -41,33 +23,42 @@ document.addEventListener('DOMContentLoaded', () => {
         </path>
       </svg>
     `;
+}
+
+
+// '오늘','어제','내일','내일(예측) 코로나 데이터 호출 및 로딩중 표시
+document.addEventListener('DOMContentLoaded', () => {
+
+  // 기본값 설정
+  let selectedDateType = 'today';
+  const dateSelect = document.querySelector('#date-select');
+    // 데이터가 들어갈 위치 선택 (로딩중을 표시하려고)
+  const elementsToLoad = document.querySelectorAll('[data-loading-target]');
+
+
+  dateSelect.addEventListener('change', async (event) => {
+    selectedDateType = event.target.value;
+  
+    // 로딩 클래스 추가 및 svg 삽입
+    elementsToLoad.forEach(element  => {
+      element.innerHTML = getLoadingSVG(); 
       element.classList.add('loading'); 
     });
-  
     // 데이터 로드
     await fetchCovidData(selectedDateType);
-  
     // 로딩 클래스 제거 및 데이터 갱신
-    elementsToLoad.forEach(selector => {
-      const element = document.querySelector(selector);
+    elementsToLoad.forEach(element => {
       element.classList.remove('loading'); 
     });
   });
-  
-
   // 초기 데이터 로드 (오늘 상태로)
   fetchCovidData(selectedDateType);
-
 });
 
-
-
-// 키워드: 전세계 일간현황, 어제,오늘,내일에 해당하는 데이터 비동기 요청
-// 서버에서 COVID-19 데이터를 가져오는 함수
+// 서버에서 COVID-19 전세계 일일 데이터를 가져오는 함수
 async function fetchCovidData(dateType) {
   try {
     const response = await fetch(`/worldwide/covid-data/${dateType}`);
-    
 
     if (!response.ok) {
       throw new Error(`Error fetching data: ${response.statusText}`);
@@ -83,7 +74,7 @@ async function fetchCovidData(dateType) {
   }
 }
 
-// 키워드: 전세계 일간현황, 숫자 카운터 애니메이션 함수
+// 전세계 일간현황 숫자 카운터 애니메이션 함수
 function animateCount(targetElement, start, end, callback) {
   const randomDuration = Math.random() * 500 + 500; // 500ms ~ 1000ms 사이의 랜덤 지속 시간
   const totalFrames = Math.ceil(randomDuration / 16); // 프레임 수 계산
@@ -110,7 +101,7 @@ function animateCount(targetElement, start, end, callback) {
 }
 
 
-//키워드: 전세계 일간현황, 데이터를 화면에 업데이트하는 함수
+//전세계 일간현황 데이터를 화면에 업데이트하는 함수
 function updateCovidData(data) {
   const fields = [
     { selector: '.new-cases', value: data.new_cases, change: data.new_cases_change },
@@ -124,16 +115,12 @@ function updateCovidData(data) {
   fields.forEach(field => {
     // document.querySelector(field.selector).textContent = `${Number(field.value).toLocaleString()} 명`;
     const targetElement = document.querySelector(field.selector);
-    animateCount(targetElement, 0, Number(field.value), (currentValue) => {
-      // 텍스트 업데이트는 애니메이션 중에 이루어짐
-      targetElement.textContent = `${currentValue.toLocaleString()} 명`;
-    });
+    animateCount(targetElement, 0, Number(field.value)); 
     updateChange(`${field.selector}-change`, field.change);
   });
 }
 
-// 키워드: 전세계 일간현황, 증가,감소 텍스트 삽입
-// 값에 따라 포맷된 텍스트와 클래스 업데이트
+// 값에 따라 포맷된 텍스트와 클래스 업데이트 (증가량,감소량 표기)
 function updateChange(selector, value) {
   const element = document.querySelector(selector);
   const number = Number(value);
@@ -164,7 +151,8 @@ function updateChange(selector, value) {
 
 
 // ----------------검색 기능
-// 폼 제출 시 검색 처리
+
+// 폼 제출 시 검색 처리 (엔터,아이콘 클릭)
 document.getElementById('search-form').addEventListener('submit', function(event) {
   event.preventDefault();  // 기본 폼 제출 방지
   searchCountries();
@@ -176,16 +164,17 @@ document.getElementById('search-input').addEventListener('input', function() {
   }
 });
 
+
 function searchCountries() {
   const searchTerm = document.getElementById('search-input').value.toLowerCase(); // 입력한 검색어
-  const listItems = document.querySelectorAll('.country-list li'); // 모든 국가 리스트 항목
+  const listItems = getCountryListItems(); // 모든 국가 리스트 항목
 
   // 검색어가 비어 있으면 아무 것도 하지 않음 (change와 충돌방지겸)
   if (searchTerm === '') return;
 
    // 검색어가 있으면 해당 항목만 표시
   listItems.forEach(item => {
-    const countryName = item.querySelector('p strong').textContent.toLowerCase(); // 첫 번째 p 안의 strong 태그 (국가명)
+    const countryName = item.querySelector('p strong').textContent.toLowerCase(); // 첫 번째 p 안의 strong 태그 (한글 국가명)
     const countryEnglishName = item.querySelector('.country-english').textContent.toLowerCase(); // 영어 국가명
     if (countryName.includes(searchTerm) || countryEnglishName.includes(searchTerm)) {
       item.classList.remove('hidden'); // 일치하는 항목 표시
@@ -196,7 +185,7 @@ function searchCountries() {
 }
 
 function showAllCountries() {
-  const listItems = document.querySelectorAll('.country-list li');
+  const listItems = getCountryListItems();
   listItems.forEach(item => {
     item.classList.remove('hidden'); // 모든 항목 표시
   });
@@ -244,7 +233,7 @@ document.addEventListener('DOMContentLoaded', function () {
       }).addTo(map);
 
       // 국가 리스트 클릭 이벤트
-      const countryListItems = document.querySelectorAll('.country-list li');
+      const countryListItems = getCountryListItems();
       countryListItems.forEach(item => {
         item.addEventListener('click', () => {
           const lat = parseFloat(item.dataset.lat);
@@ -257,6 +246,7 @@ document.addEventListener('DOMContentLoaded', function () {
           }
 
           map.flyTo([lat, lng], 5);
+
           geojsonLayer.eachLayer(layer => {
             const countryProps = layer.feature.properties;
             const possibleNames = [
@@ -271,11 +261,9 @@ document.addEventListener('DOMContentLoaded', function () {
             ].filter(Boolean); // null/undefined 속성 제거
            
             const normalizedCountryName = countryName.toLowerCase().replace(/\(.*\)/, '').trim();
-          
-            const isClickedCountry = possibleNames.some(name =>
-              name.toLowerCase().replace(/\(.*\)/, '').trim() === normalizedCountryName
+            const isClickedCountry = possibleNames.some(ctyname =>
+              ctyname.toLowerCase().replace(/\(.*\)/, '').trim() === normalizedCountryName,
             );
-            
           
             layer.setStyle({
               fillColor: isClickedCountry ? 'orange' : 'transparent',
@@ -289,7 +277,10 @@ document.addEventListener('DOMContentLoaded', function () {
         });
       });
     })
-    .catch(error => console.error("Error fetching data:", error));
+    .catch(error => {
+      console.error("Error fetching data:", error);
+      alert("지도를 로드하는 중 문제가 발생했습니다. 다시 시도해주세요.");
+    });
 
   // 팝업에 물결 효과를 추가하는 함수
   function createRippleEffect(target) {
@@ -307,7 +298,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
 const graph = () => {
-  const countryListItems = document.querySelectorAll('.country-list li');
+  const countryListItems = getCountryListItems();
   const graphViews = document.querySelectorAll('.graph-view');
   let pieCharts = []; // 각 기간에 대해 별도 그래프 저장
   let chartType = 'pie'; // 초기 그래프 타입 설정 (원형 그래프)

@@ -289,7 +289,7 @@ body.light-mode .update-day:hover {
 /* 나라 리스트 */
 .country-list ul {
   overflow-y: scroll;
-  /* max-height: calc(100vh - 200px); */
+  height: calc(100vh - 200px);
 }
 
 .country-list ul li {

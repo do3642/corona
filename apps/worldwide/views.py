@@ -70,6 +70,8 @@ def api_marker_data():
     _, _,  marker_data = get_covid_map_and_data()  # marker_data만 반환
     return jsonify(marker_data)
 
+
+
 # 전세계 데이터 계산 후 리턴
 @worldwide_bp.route('/covid-data/<date_type>', methods=['GET'])
 def get_covid_data(date_type):
