@@ -289,7 +289,7 @@ body.light-mode .update-day:hover {
 /* 나라 리스트 */
 .country-list ul {
   overflow-y: scroll;
-  /* max-height: calc(100vh - 200px); */
+  height: calc(100vh - 200px);
 }
 
 .country-list ul li {
@@ -669,6 +669,32 @@ body.light-mode .country-list ul li p.cumulative-status span{
   border-radius: 15px;
 }
 
+/* Ripple Effect 기본 스타일 */
+.ripple-effect {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  background-color: rgba(0, 123, 255, 0.4); /* 파란색 반투명 */
+  border-radius: 50%;
+  pointer-events: none;
+  transform: translate(-50%, -50%) scale(1);
+  animation: ripple-animation 1.5s ease-out infinite;
+}
+
+/* Ripple Effect 애니메이션 */
+@keyframes ripple-animation {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(10); /* 물결 확장 */
+    opacity: 0; /* 사라짐 */
+  }
+}
+
 
 
 /* ################# */
@@ -701,7 +727,7 @@ body.light-mode .country-list ul li p.cumulative-status span{
   background-color: #1e1e1e;
   box-shadow: 0 0 50px rgba(0, 255, 255, 0.3), 0 0 15px rgba(0, 255, 255, 0.3);
   transform: scale(1.1);
-  transition: transform 0.2s ease-in-out;
+  transition: transform 3s ease-in-out;
 }
 
 /* 사이버펑크 스타일의 네온 효과 */
@@ -724,7 +750,7 @@ body.light-mode .country-list ul li p.cumulative-status span{
 /* hover 및 active 상태에서 효과 */
 .graph-btn button:hover::before,
 .graph-btn button:active::before {
-  animation: gradient-animation 1.5s linear infinite;
+  animation: gradient-animation 3s linear infinite;
 }
 
 /* 그래디언트 애니메이션 */
@@ -904,4 +930,8 @@ body.light-mode .country-list ul li p.cumulative-status span{
   color: #275efe;
   border-bottom: 2px solid #275efe;
 }
+
+
+
+/* ----------------------------------------- */
 

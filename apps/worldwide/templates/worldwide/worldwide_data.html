@@ -16,15 +16,29 @@
 
 <!-- Leaflet MarkerCluster JS -->
 <script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
+
 <!-- Chart Js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <!-- Chart.js DataLabels Plugin -->
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/hover.css/2.3.1/css/hover-min.css">
+
+
+
+<!-- chartjs-plugin-3d -->
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-3d"></script>
+
+
+<!-- jquery와 riplles 라이브러리 -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.ripples/0.5.3/jquery.ripples.min.js"></script>
+
+<link rel="stylesheet" href="{{ url_for('worldwide.static', filename='css/worldwide.css') }}">
 <link rel="stylesheet" href="{{ url_for('worldwide.static', filename='css/layout.css') }}">
-  <link rel="stylesheet" href="{{ url_for('worldwide.static', filename='css/worldwide.css') }}">
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.ripples/0.5.3/jquery.ripples.min.js"></script>
+
+
+
 </head>
 <body class="dark-mode">
   <nav>
@@ -115,7 +129,7 @@
               {% for classList in daily_classList %}
                 <div>
                   <p>{{ classList.label }}</p> 
-                  <p class="{{ classList.className }}">  
+                  <p class="{{ classList.className }}" data-loading-target="{{ classList.className }}" >  
                     <!-- 애니메이션 SVG 로더 -->
                     <svg version="1.1" id="loader-1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
                       width="42px" height="42px" viewBox="0 0 40 40" enable-background="new 0 0 40 40" xml:space="preserve">
@@ -148,7 +162,7 @@
             <div class="column data-column">
               {% for classList in total_classList %}
                 <div class="data-row">
-                  <span class="{{ classList.className }}">
+                  <span class="{{ classList.className }}" data-loading-target="{{ classList.className }}">
                     <!-- 애니메이션 SVG 로더 -->
                     <svg version="1.1" id="loader-1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
                       width="30px" height="30px" viewBox="0 0 40 40" enable-background="new 0 0 40 40" xml:space="preserve">
@@ -267,7 +281,10 @@
           <div>
             <div>마우스 물결효과</div>
             <div class="toggle-button " data-action="toggle-mouse-action"></div>
-
+          </div>
+          <div>
+            <div>마우스 커서효과</div>
+            <div class="toggle-button " data-action="toggle-cursor-action"></div>
           </div>
 
       </div>
