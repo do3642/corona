@@ -19,7 +19,6 @@ def index():
 @crw_bp.route('/select-date')
 def select_date():
     country = request.args.get('country')
-    print(country)
     return jsonify({
     'status': 'success',
     'selected_country': country
@@ -31,8 +30,6 @@ def select_date():
 def crawl_data():
     # 클라이언트에서 국가 이름 받기
     country = request.args.get('country')
-    print("="*50)
-    print(country)
 
     if not country:
         return jsonify({
@@ -51,9 +48,6 @@ def crawl_data():
         #     news = search_google(search_query)
 
         news = search_naver(search_query)
-        print("="*50)
-        print(news)
-        print("="*50)
 
         # 크롤링 결과 확인
         if not news:

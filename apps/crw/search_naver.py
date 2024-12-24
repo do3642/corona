@@ -17,7 +17,6 @@ def search_naver(query):
     # BeautifulSoup 객체 생성
     soup = BeautifulSoup(response.text, 'html.parser')
 
-    print(soup)
     
     
     # 뉴스 데이터를 저장할 리스트
@@ -48,13 +47,3 @@ def search_naver(query):
     # 결과 반환
     return news
 
-# 테스트 실행
-query = "한국언론진흥재단_뉴스빅데이터_메타데이터_코로나"
-news_results = search_naver(query)
-
-# 결과 출력
-for news in news_results:
-    print(f"Title: {news['title']}")
-    print(f"URL: {news['url']}")
-    print(f"Metadata: {news['metadata']}")
-    print("=" * 50)
