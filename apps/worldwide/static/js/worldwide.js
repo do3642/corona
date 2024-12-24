@@ -1,7 +1,8 @@
 
+// 키워드: 전세계 일간현황, 최초 일간현황 데이터 삽입, 로딩svg삽입,셀렉트 항목 변경
 // 페이지 방문 시 작동할 기본세팅 (data불러오기)
 document.addEventListener('DOMContentLoaded', () => {
-  // 기본적으로 '오늘' 상태로 설정
+  // 셀렉트 박스 오늘로 설정 (html에서도 선택되어 있지만 데이터 초기값 불러올라고 지정)
   let selectedDateType = 'today';
 
   // 날짜 선택 박스 이벤트 리스너 추가
@@ -56,20 +57,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 초기 데이터 로드 (오늘 상태로)
   fetchCovidData(selectedDateType);
+
 });
 
 
 
-
+// 키워드: 전세계 일간현황, 어제,오늘,내일에 해당하는 데이터 비동기 요청
 // 서버에서 COVID-19 데이터를 가져오는 함수
 async function fetchCovidData(dateType) {
   try {
     const response = await fetch(`/worldwide/covid-data/${dateType}`);
+    
 
     if (!response.ok) {
       throw new Error(`Error fetching data: ${response.statusText}`);
     }
     const data = await response.json();
+    // console.log(data)
     
     // 데이터를 화면에 반영하는 함수 호출
     updateCovidData(data);
@@ -78,7 +82,34 @@ async function fetchCovidData(dateType) {
   }
 }
 
-// 데이터를 화면에 업데이트하는 함수
+// 키워드: 전세계 일간현황, 숫자 카운터 애니메이션 함수
+function animateCount(targetElement, start, end, callback) {
+  const randomDuration = Math.random() * 500 + 500; // 500ms ~ 1000ms 사이의 랜덤 지속 시간
+  const totalFrames = Math.ceil(randomDuration / 16); // 프레임 수 계산
+  let current = start;
+  let remainingFrames = totalFrames;
+
+  function stepCount() {
+    const randomIncrement = Math.ceil((end - current) / remainingFrames) + Math.floor(Math.random() * 5); 
+    current += randomIncrement;
+
+    if (current >= end) {
+      current = end; // 목표값 정확하게 도달
+      targetElement.textContent = `${current.toLocaleString()} 명`;
+      if (callback) callback(current); // 콜백 실행
+      return;
+    }
+
+    targetElement.textContent = `${current.toLocaleString()} 명`;
+    remainingFrames--;
+    requestAnimationFrame(stepCount);
+  }
+
+  stepCount();
+}
+
+
+//키워드: 전세계 일간현황, 데이터를 화면에 업데이트하는 함수
 function updateCovidData(data) {
   const fields = [
     { selector: '.new-cases', value: data.new_cases, change: data.new_cases_change },
@@ -90,11 +121,17 @@ function updateCovidData(data) {
   ];
 
   fields.forEach(field => {
-    document.querySelector(field.selector).textContent = `${Number(field.value).toLocaleString()} 명`;
+    // document.querySelector(field.selector).textContent = `${Number(field.value).toLocaleString()} 명`;
+    const targetElement = document.querySelector(field.selector);
+    animateCount(targetElement, 0, Number(field.value), (currentValue) => {
+      // 텍스트 업데이트는 애니메이션 중에 이루어짐
+      targetElement.textContent = `${currentValue.toLocaleString()} 명`;
+    });
     updateChange(`${field.selector}-change`, field.change);
   });
 }
 
+// 키워드: 전세계 일간현황, 증가,감소 텍스트 삽입
 // 값에 따라 포맷된 텍스트와 클래스 업데이트
 function updateChange(selector, value) {
   const element = document.querySelector(selector);
@@ -102,15 +139,23 @@ function updateChange(selector, value) {
 
   // 0인 경우에는 변동 없음
   if (number === 0) {
-    element.textContent = `(변동 없음)`;  // 0일 때 표시할 텍스트
-    element.classList.add('zero');  // zero 클래스 추가
-    element.classList.remove('plus', 'minus');  // plus, minus 클래스 제거
+    element.textContent = `(변동 없음)`; // 0일 때 표시할 텍스트
+    element.classList.add('zero'); // zero 클래스 추가
+    element.classList.remove('plus', 'minus'); // plus, minus 클래스 제거
   } else {
-    const isPositiveOrZero = number > 0;  // 양수일 경우 plus 클래스, 음수일 경우 minus 클래스
-    element.textContent = `(${Math.abs(number).toLocaleString()}${isPositiveOrZero ? ' ▲' : ' ▼'})`;
-    element.classList.toggle('plus', isPositiveOrZero);  // 양수일 경우 plus 클래스 추가
-    element.classList.toggle('minus', !isPositiveOrZero);  // 음수일 경우 minus 클래스 추가
-    element.classList.remove('zero');  // zero 클래스 제거
+    const isPositiveOrZero = number > 0; // 양수일 경우 plus 클래스, 음수일 경우 minus 클래스
+    const absoluteValue = Math.abs(number);
+
+    // 애니메이션 적용 (0부터 목표 숫자까지 카운트)
+    animateCount(element, 0, absoluteValue, (currentValue) => {
+      // 애니메이션 중에 값 업데이트
+      element.textContent = `(${currentValue.toLocaleString()}${isPositiveOrZero ? ' ▲' : ' ▼'})`;
+    });
+
+    // 클래스 토글
+    element.classList.toggle('plus', isPositiveOrZero);
+    element.classList.toggle('minus', !isPositiveOrZero);
+    element.classList.remove('zero'); // zero 클래스 제거
   }
 }
 
@@ -118,14 +163,9 @@ function updateChange(selector, value) {
 
 
 // ----------------검색 기능
-document.getElementById('search-input').addEventListener('keydown', function(event) {
-  // 엔터 키가 눌렸을 때만 검색
-  if (event.key === 'Enter') {
-    searchCountries();
-  }
-});
-document.querySelector('.search-icon').addEventListener('click', function() {
-  // 검색 아이콘 클릭 시 검색
+// 폼 제출 시 검색 처리
+document.getElementById('search-form').addEventListener('submit', function(event) {
+  event.preventDefault();  // 기본 폼 제출 방지
   searchCountries();
 });
 document.getElementById('search-input').addEventListener('input', function() {
@@ -182,9 +222,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
       // markerData를 사용하여 마커 추가
       markerData.forEach(marker => {
-          L.marker([marker.lat, marker.lng])
-              .bindPopup(`<strong>${marker.country}</strong>`)
-              .addTo(markerCluster);
+        const leafletMarker = L.marker([marker.lat, marker.lng])
+          .bindPopup(`<strong>${marker.country}</strong>`);
+
+        // 마커 클릭 시 물결 효과 추가
+        leafletMarker.on('popupopen', function () {
+          createRippleEffect(leafletMarker);
+        });
+
+        markerCluster.addLayer(leafletMarker);
       });
 
       // GeoJSON 데이터 추가
@@ -199,7 +245,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     fillOpacity: 0.3,
                 },
                 onEachFeature: function (feature, layer) {
-                    const countryName = feature.properties.sovereignt || feature.properties.name;
+                    const countryName = feature.properties.name_ko || feature.properties.sovereignt || feature.properties.name;
                     layer.bindPopup(`<strong>${countryName}</strong>`);
                 },
             }).addTo(map);
@@ -292,6 +338,7 @@ const graph = () => {
     periods.forEach((period, index) => {
       const graphView = graphViews[index];
       const { new_cases, new_recoveries, new_deaths } = data[period];
+      
 
       // 데이터 렌더링
       const sanitizedData = [new_cases, new_recoveries, new_deaths].map(value => {
@@ -304,20 +351,34 @@ const graph = () => {
         <h4>${period === 'daily' ? '일간' : period === 'weekly' ? '주간' : '월간'}</h4>
         <div class="graph-details">
         <p>확진자</p>
-        <p>${new_cases.toLocaleString()}명</p>
+        <p>${parseInt(new_cases, 10).toLocaleString()}명</p>
         <p>완치자</p>
-        <p>${new_recoveries.toLocaleString()}명</p>
+        <p>${parseInt(new_recoveries, 10).toLocaleString()}명</p>
         <p>사망자</p>
-        <p>${new_deaths.toLocaleString()}명</p>
+        <p>${parseInt(new_deaths, 10).toLocaleString()}명</p>
         </div>
       `;
 
       // 그래프 생성
       const ctx = graphView.querySelector('canvas').getContext('2d');
+      const chartLabels = chartType === 'pie' ? [] : ['확진자', '완치자', '사망자'];
+      const chartCanvas = graphView.querySelector('canvas');
+        if (chartType === 'pie') {
+          chartCanvas.width = 250; // 실제 크기
+          chartCanvas.height = 150;
+          chartCanvas.style.width = '250px'; // 시각적 크기
+          chartCanvas.style.height = '150px';
+        } else {
+          chartCanvas.width = 250;
+          chartCanvas.height = 250;
+          chartCanvas.style.width = '250px';
+          chartCanvas.style.height = '250px';
+        }
+
       const chart = new Chart(ctx, {
         type: chartType, // 동적으로 그래프 타입 설정
         data: {
-          labels: ['확진자', '완치자', '사망자'],
+          labels: chartLabels,
           datasets: [
             {
               label: `${period} COVID-19 Data`,
@@ -330,6 +391,7 @@ const graph = () => {
         },
         options: {
           responsive: true,
+          // aspectRatio: chartType === 'pie' ? 1 : 2, // 파이 그래프는 1:1 비율, 나머지 그래프는 2:1 비율로 설정
           plugins: {
             legend: {
               position: 'top',
@@ -349,11 +411,11 @@ const graph = () => {
                 return `${percentage}%`; // 데이터 값과 비율 표시
               },
               color: (context) => {
-                return (chartType === 'line' || chartType === 'bar') ? '#000' : '#fff';
+                return '#fff';
               },
               font: {
                 weight: 'bold',
-                size: 14
+                size: 14,
               },
               padding: 5,
             }
@@ -421,4 +483,231 @@ const graph = () => {
 };
 
 graph();
+
+
+
+// 보는 화면에 맞게 지도크기 제어
+function adjustMiddleContentHeight() {
+  const mapBox = document.querySelector('#map-container');
+
+  const dailyData = document.querySelector('.world-wide-daily');
+  // const nav = document.querySelector('nav');
+  const graphData = document.querySelector('.graph-box')
+
+  const countryList = document.querySelector('.country-list ul');
+
+  const updateBox = document.querySelector('.update-day');
+  const searchBox = document.querySelector('.search-box');
+
+  
+  // 화면 전체 높이에서 헤더,일간현황,그래프의 높이를 뺀 값 계산
+  const availableHeight = window.innerHeight  - dailyData.offsetHeight - graphData.offsetHeight - 25; // 50은 여유 마진값
+  const availableHeightLeft = window.innerHeight - updateBox.offsetHeight - searchBox.offsetHeight - 25;
+  mapBox.style.height = `${availableHeight}px`;
+  countryList.style.height = `${availableHeightLeft}px`;
+
+
+
+
+}
+
+// 페이지 로드와 리사이즈 시 실행
+window.addEventListener('load', adjustMiddleContentHeight);
+window.addEventListener('resize', adjustMiddleContentHeight);
+
+
+
+
+
+
+document.addEventListener('DOMContentLoaded', () => {
+  const updateDayElement = document.querySelector('.update-day');
+  const datePopup = document.querySelector('#date-popup');
+  const datePicker = document.querySelector('#date-picker');
+  const submitDateButton = document.querySelector('#submit-date');
+  const cancelDateButton = document.querySelector('#cancel-date');
+
+  // 날짜 범위 정의
+  const minDate = new Date('2020-01-04');
+  const maxDate = new Date('2024-11-16');
+
+  // 1. .update-day 클릭 시 #date-popup의 hidden 클래스를 토글
+  updateDayElement.addEventListener('click', () => {
+      // 팝업이 열려 있으면 외부 클릭 이벤트 등록
+      datePopup.classList.toggle('hidden');
+      if (!datePopup.classList.contains('hidden')) {
+          document.addEventListener('click', handleOutsideClick);
+      }
+  });
+
+  // 2. #submit-date 클릭 시 서버로 선택된 날짜 전송
+  submitDateButton.addEventListener('click', () => {
+      const selectedDate = datePicker.value;
+
+      if (!selectedDate) {
+          alert('날짜를 선택해주세요.');
+          return;
+      }
+
+      const selectedDateObj = new Date(selectedDate);
+
+      // 선택된 날짜가 범위를 벗어났는지 확인
+      if (selectedDateObj < minDate || selectedDateObj > maxDate) {
+          alert(`날짜는 ${minDate.toLocaleDateString()} 부터 ${maxDate.toLocaleDateString()} 까지 선택할 수 있습니다.`);
+          return;
+      }
+        // 서버로 날짜 전송 (GET 방식)
+      fetch(`/worldwide/data?date=${selectedDate}`)
+      .then(response => {
+          if (!response.ok) throw new Error('서버 요청 실패');
+          return response.json(); // JSON 응답을 반환받음
+      })
+      .then(data => {
+          console.log("서버로부터 받은 데이터:", data);
+          updateDOM(data); // 받은 데이터를 DOM에 반영
+          
+      })
+      .catch(error => {
+          console.error('에러 발생:', error);
+          alert('날짜 전송 중 오류가 발생했습니다.');
+      });
+
+
+      // 팝업 닫기
+      datePopup.classList.add('hidden');
+      document.removeEventListener('click', handleOutsideClick); // 외부 클릭 이벤트 제거
+  });
+
+  // 3. #cancel-date 클릭 시 팝업 닫기 및 외부 클릭 처리
+  cancelDateButton.addEventListener('click', (event) => {
+      event.stopPropagation(); // 부모 요소로의 이벤트 전파 방지
+      datePopup.classList.add('hidden');
+      document.removeEventListener('click', handleOutsideClick); // 외부 클릭 이벤트 제거
+  });
+
+  // 외부 클릭 시 팝업 닫기
+  function handleOutsideClick(event) {
+      if (!datePopup.contains(event.target) && !updateDayElement.contains(event.target)) {
+          datePopup.classList.add('hidden');
+          document.removeEventListener('click', handleOutsideClick); // 외부 클릭 이벤트 제거
+      }
+  }
+
+  // 4. #date-popup 내부 클릭 이벤트가 외부로 전파되지 않도록
+  datePopup.addEventListener('click', (event) => {
+      event.stopPropagation(); // 클릭 이벤트 전파 방지
+  });
+});
+function updateDOM(data) {
+  // 1. 업데이트 날짜
+  document.querySelector('.update-day p:nth-child(2)').textContent = `${data.date_reported} 11:00`;
+
+  // 2. 국가 리스트 업데이트
+  const countryList = document.querySelector('.country-list ul');
+  
+  // 3. 국가별 데이터 갱신
+  data.records.forEach((record, index) => {
+      // 국가별 감염률 찾기
+      const countryPercentage = data.country_percentages.find(
+          p => p.country === record.country
+      );
+
+      // 각 국가 항목 (li)에서 필요한 부분만 갱신
+      const listItem = countryList.children[index];
+
+      // 국가명, 감염률, 일간 현황, 누적 현황 갱신
+      listItem.querySelector('.country-name strong').textContent = record.country_korean;
+      listItem.querySelector('.country-name .country-english').textContent = record.country;
+      listItem.querySelector('.infection-rate span').textContent = `${countryPercentage ? countryPercentage.percentage : 0}%`;
+      listItem.querySelector('.daily-status span').innerHTML = `<strong>${record.new_cases.toLocaleString()}</strong> | ${record.new_deaths.toLocaleString()}`;
+      listItem.querySelector('.cumulative-status span').innerHTML = `<strong>${record.cumulative_cases.toLocaleString()}</strong> | ${record.cumulative_deaths.toLocaleString()}`;
+  });
+}
+
+
+
+
+document.addEventListener('DOMContentLoaded', function () {
+
+
+  // 탭 전환 로직
+  function setupTabs(tabs, contents) {
+    tabs.forEach((tab, index) => {
+      tab.addEventListener('click', () => {
+        // 모든 탭과 콘텐츠에서 활성화 제거
+        tabs.forEach(t => t.classList.remove('active'));
+        contents.forEach(c => c.classList.remove('active'));
+
+        // 선택된 탭과 해당 콘텐츠에 활성화 추가
+        tab.classList.add('active');
+        contents[index].classList.add('active');
+      });
+    });
+  }
+
+  // 버튼과 콘텐츠 선택
+  const tabButtons = [document.querySelector('.news'), document.querySelector('.test-btn')];
+  const tabContents = [document.querySelector('.crw'), document.querySelector('.test')];
+
+  // 탭 설정
+  setupTabs(tabButtons, tabContents);
+
+  // 토글 버튼 로직
+  function setupToggleButtons() {
+    // 모든 토글 버튼 선택
+    const toggleButtons = document.querySelectorAll('.toggle-button');
+    
+    toggleButtons.forEach((toggleButton) => {
+      let isRippleActive = false; // 리플 효과가 활성화되었는지 추적하는 변수
+
+
+      toggleButton.addEventListener('click', () => {
+        // data-action 속성을 사용하여 각 버튼의 동작을 다르게 설정
+        const action = toggleButton.dataset.action; // 예: 'dark-mode', 'light-mode', 'custom-action' 등
+        
+        // 예시로 각 동작을 처리
+        if (action === 'toggle-dark-light') {
+          // 다크 모드 / 라이트 모드 전환
+          document.body.classList.toggle('dark-mode');
+          document.body.classList.toggle('light-mode');
+
+        } else if (action === 'toggle-mouse-action') {
+          if (!isRippleActive) {
+            // 리플 효과 활성화
+            $('body').ripples({
+              dropRadius: 50,
+              perturbance: 0.04
+            });
+            isRippleActive = true; // 리플 효과 활성화 상태로 변경
+          } else {
+            // 리플 효과 비활성화
+            $('body').ripples('destroy'); // 리플 효과 제거
+            isRippleActive = false; // 리플 효과 비활성화 상태로 변경
+          }
+         
+        } else if (action === 'another-action') {
+          // 또 다른 동작
+          console.log('Another action triggered');
+          // 여기에 또 다른 동작을 정의
+        }
+        
+        // 각 버튼에 대해서 추가적인 동작을 더 추가할 수 있음
+        toggleButton.classList.toggle('open');
+      });
+    });
+  }
+
+  // 토글 버튼 설정
+  setupToggleButtons();
+});
+
+
+
+
+
+
+
+
+
+
 

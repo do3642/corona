@@ -1,10 +1,85 @@
 @import url("common.css");
-
-
-nav{
-  height: 30px;
-  border: 1px solid #eee;
+body {
+  width: 100%;
+  max-width: 1920px; /* 최대 크기를 1920px로 설정 (원하는 크기 설정) */
+  min-width: 1000px; /* 최소 크기를 1000px로 설정 */
+  margin: 0;
+  padding: 0;
 }
+
+
+/* 기본 스타일 */
+nav {
+  position: fixed;
+  bottom: 5%;
+  right: 5%;
+  z-index: 1000;
+  width: 180px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: end;
+}
+
+.icon-button {
+  background-color: #3c2a74;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  width: 80px; /* 초기 크기 */
+  height: 80px; /* 초기 크기 */
+}
+
+.icon-button i {
+  font-size: 1.8em;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%,-50%);
+}
+
+/* 텍스트 기본 상태 */
+.button-text {
+  color: white;
+  font-size: .9em;
+  margin-left: 10px;
+  opacity: 0; /* 초기에는 숨김 */
+  transform: translateX(20px); /* 초기 위치는 오른쪽으로 밀어둠 */
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  white-space: nowrap; /* 텍스트가 한 줄로 표시되도록 */
+  visibility: hidden; /* 텍스트를 보이지 않게 설정 */
+  font-family: 'GmarketSansMedium';
+
+}
+
+/* Hover 상태 */
+nav:hover .icon-button{
+  border-radius: 10px;
+  width: 180px; /* 버튼 가로 길이 확장 */
+  height: 40px; /* 버튼 높이 조정 */
+}
+
+nav:hover .icon-button i {
+  font-size:1em;
+  position: relative;
+  left: 0;top: 0;
+  transform: translate(0,0);
+}
+
+nav:hover .icon-button .button-text {
+  opacity: 1; /* 텍스트가 보이게 함 */
+  transform: translateX(0); /* 텍스트가 오른쪽에서 왼쪽으로 슬라이드 */
+  visibility: visible; /* 텍스트를 보이게 설정 */
+}
+
 
 main{
   display: flex !important;
@@ -29,18 +104,30 @@ main{
   text-align: center;
   padding: 10px;
   border-radius: 15px;
-  background: linear-gradient(45deg, #1e1e1e, #333); /* 어두운 그라디언트 배경 */
-  color: #fff; /* 기본 글자 색상 */
+  background: var(--bg-color);
+  color: var(--text-color);
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5), 0 6px 20px rgba(0, 255, 255, 0.2); /* 부드러운 빛 효과 */
   transition: 0.3s ease;
+  position: relative;
+  z-index: 10;
+  cursor: pointer;
+
 }
 
 /* 호버 시 효과 */
-.update-day:hover {
+body.dark-mode .update-day:hover {
   transform: translateY(-5px) scale(1.05);
   box-shadow: 0 10px 10px rgba(0, 0, 0, 0.6), 0 10px 30px rgba(0, 255, 255, 0.5); /* 강렬한 그림자와 빛 효과 */
   background: linear-gradient(45deg, #333, #444); /* 어두운 배경의 변화 */
 }
+
+body.light-mode .update-day:hover {
+  transform: translateY(-5px) scale(1.05);
+  box-shadow: 0 10px 10px rgba(0, 0, 0, 0.6), 0 10px 30px rgba(0, 255, 255, 0.5); /* 강렬한 그림자와 빛 효과 */
+  background: #fff
+}
+
+
 
 /* 텍스트 스타일 */
 .update-day > p {
@@ -60,8 +147,101 @@ main{
 /* 기본 텍스트 */
 .update-day > p span {
   font-family: inherit;
-  color: #fff; /* 기본 텍스트 색상 */
+  color: var(--text-color); /* 기본 텍스트 색상 */
+  transition: .3s;
 }
+/* Tooltip 기본 스타일 */
+.update-day[data-tooltip]:hover::after {
+  content: attr(data-tooltip); /* data-tooltip 속성 내용 */
+  position: absolute;
+  top: 90%; 
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--bg-color);
+  color: var(--text-color);
+  padding: 5px 10px;
+  border-radius: 5px;
+  font-size: 14px;
+  white-space: nowrap; /* 텍스트가 한 줄로 표시되게 */
+  z-index: 1001;
+  pointer-events: none; /* Tooltip에 클릭 이벤트가 없도록 */
+  opacity: 0;
+  transition: opacity 0.3s ease; /* 투명도 전환 */
+}
+
+/* Hover 시 tooltip 표시 */
+.update-day:hover[data-tooltip]:after {
+  opacity: 1;
+}
+
+.hidden {
+  display: none;
+}
+#date-popup {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translate(-50%);
+  padding: 20px;
+  background: #2a2a2a; /* Dark background */
+  border: 1px solid #444; /* Lighter border for contrast */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.7); /* Deep shadow for floating effect */
+  z-index: 1000;
+  border-radius: 8px; /* Rounded corners for smoother look */
+  color: #f1f1f1; /* Light text for readability */
+}
+
+#date-popup input[type="date"] {
+  width: 100%;
+  padding: 8px;
+  background-color: #333; /* Dark input background */
+  color: #fff; /* White text */
+  border: 1px solid #555; /* Subtle border */
+  border-radius: 5px;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
+}
+
+#date-popup input[type="date"]:focus {
+  background-color: #444; /* Darker on focus */
+  border-color: #888; /* Focus border */
+}
+
+#date-popup button {
+  background-color: #0066cc; /* Blue buttons to pop out */
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  margin-top: 10px;
+  font-size: 14px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+#date-popup button:hover {
+  background-color: #005bb5; /* Darker blue on hover */
+}
+
+#date-popup button:focus {
+  outline: none;
+}
+
+#date-popup button#cancel-date {
+  background-color: #cc0000; /* Red for cancel */
+}
+
+#date-popup button#cancel-date:hover {
+  background-color: #b30000; /* Darker red on hover */
+}
+
+
+
+
+
+
+
+
 
 /* 검색창 */
 .search-box{
@@ -83,7 +263,9 @@ main{
 }
 .search-icon{
   position: absolute; left: 0;top: 0;
-  transform: translate(50%,60%);
+  transform: translate(50%,35%);
+  border: none;
+  background: none;
 }
 
 .search-box input::placeholder {
@@ -98,7 +280,7 @@ main{
   color: #666; /* 더 짙은 색상 */
 }
 .search-box:hover .search-icon{
-  transform: translate(50%, 60%) rotate(360deg);
+  transform: translate(50%, 35%) rotate(360deg);
   transition: transform 0.5s ease;
 }
 
@@ -107,15 +289,15 @@ main{
 /* 나라 리스트 */
 .country-list ul {
   overflow-y: scroll;
-  max-height: calc(100vh - 200px);
+  /* max-height: calc(100vh - 200px); */
 }
 
 .country-list ul li {
   border: 1px solid #333;
   padding: 20px 15px;
   margin-bottom: 2px;
-  background: #222;
-  color: #fff;
+  background: var(--bg-color);
+  color: var(--text-color);
   border-radius: 10px;
   cursor: pointer;
   position: relative;
@@ -149,7 +331,13 @@ main{
 
 .country-list ul li:hover {
   box-shadow: 0 0 10px rgba(0, 255, 153, 0.6), 0 0 20px rgba(255, 0, 204, 0.6), 0 0 30px rgba(102, 0, 255, 0.6);
-  
+  background: #222;
+}
+body.dark-mode .country-list ul li:hover{
+  background: #222;
+}
+body.light-mode .country-list ul li:hover{
+  background: #fff;
 }
 
 .country-list ul li:hover::before,
@@ -210,25 +398,35 @@ main{
 }
 
 
-.country-list ul li p.infection-rate span,
-.country-list ul li p.daily-status span strong,
-.country-list ul li p.cumulative-status span strong {
+
+body.dark-mode .country-list ul li p.infection-rate span,
+body.dark-mode .country-list ul li p.daily-status span strong,
+body.dark-mode .country-list ul li p.cumulative-status span strong {
   font-weight: bold;
   color: #ff4d4d; /* 빨간색 */
 }
-
-.country-list ul li p.daily-status span,
-.country-list ul li p.cumulative-status span {
-  color: #fff;
+body.light-mode .country-list ul li p.infection-rate span,
+body.light-mode .country-list ul li p.daily-status span strong,
+body.light-mode .country-list ul li p.cumulative-status span strong{
+  color: red;
 }
 
-/* 사이버펑크 스타일 스크롤바 */
+body.dark-mode .country-list ul li p.daily-status span,
+body.dark-mode .country-list ul li p.cumulative-status span {
+  color: #fff;
+}
+body.light-mode .country-list ul li p.daily-status span,
+body.light-mode .country-list ul li p.cumulative-status span{
+  color: #000;
+}
+
+/* 스크롤 바 제어  */
 .country-list ul::-webkit-scrollbar {
   width: 10px;
 }
 
 .country-list ul::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: rgba(34, 34, 34, 0.5);
   border-radius: 10px;
 }
 
@@ -260,7 +458,7 @@ main{
 
 /* 전세계 일간현황 */
 .world-wide-daily{
-  background: #222;
+  background: rgba(34, 34, 34, 0.5);
   border-radius: 15px;
   padding: 10px;
   margin-bottom: 5px;
@@ -461,13 +659,16 @@ main{
 /* 지도영역 */
 .covid-map{
   position: relative;
+  /* height: 320px; */
   overflow: hidden;
 }
 #map-container{
   width: 100%;
-  height: 300px;
+  height: 351px;
   margin: auto;
+  border-radius: 15px;
 }
+
 
 
 /* ################# */
@@ -560,6 +761,7 @@ main{
   display: flex;
   justify-content: space-around;
   align-items: center;
+  background: rgba(34, 34, 34, 0.5);
 }
 .graph-left{
   width: 50%;
@@ -571,17 +773,22 @@ main{
   font-size: 1.3em;
   margin-bottom: 10px;
   font-family: 'GmarketSansMedium';
+  color: #fff;
 }
 
 
 .graph-left .graph-details p{
   font-family: 'Pretendard-Regular';
+  color: #fff;
+}
+.graph-details p:nth-of-type(odd){
+  margin-bottom: 5px;
 }
 .graph-details p:nth-of-type(even){
   text-align: center;
   padding: 10px;
   border-radius: 7px;
-  color: #fff;
+  margin-bottom: 10px;
 }
 .graph-details p:nth-of-type(2){
   background-color: #ef476f;
@@ -594,11 +801,16 @@ main{
 }
 
 .graph-right{
-  width: 100%;
+  width: 250px;
+  height: 250px;
+  /* background-color: red; */
+}
+.graph-right canvas{
+  /* width: 300px; */
 
 }
 #dailyChart,#weeklyChart,#monthlyChart{
-  width: 100%;
+
 }
 
 
@@ -611,9 +823,17 @@ main{
   background-color: rgba(0,0,0,0.4);
   border-radius: 10px;
   overflow: hidden;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  
 }
 .right-tab-btn{
   display: flex;
+  width: 100%;
+  margin-bottom: 10px;
+
 }
 .right-tab-btn div{
   flex: 1;
@@ -621,3 +841,67 @@ main{
   border: 1px solid #333;
 
 }
+
+#background-video {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* 비디오 크기를 맞추기 위한 옵션 */
+  z-index: -1; /* 콘텐츠 뒤로 보내기 */
+}
+
+.test{
+  text-align: center;
+}
+
+
+
+.toggle-button {
+  width: 100px;
+  height: 50px;
+  background-color: #4CAF50;
+  border-radius: 25px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  position: relative;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.toggle-button:before {
+  content: "";
+  width: 40px;
+  height: 40px;
+  background-color: white;
+  border-radius: 50%;
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  transition: left 0.3s ease;
+}
+
+.toggle-button.open {
+  background-color: #f44336;
+}
+
+.toggle-button.open:before {
+  left: 55px;
+}
+
+
+.crw, .test {
+  display: none;
+}
+
+/* 활성화 상태 */
+.crw.active, .test.active {
+  display: block;
+}
+/* 버튼 활성화 스타일 */
+.right-tab-btn .news.active, .right-tab-btn .test-btn.active {
+  font-weight: bold;
+  color: #275efe;
+  border-bottom: 2px solid #275efe;
+}
+

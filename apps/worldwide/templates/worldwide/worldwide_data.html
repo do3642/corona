@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
+  <title>전세계 코로나 데이터</title>
 <!-- Leaflet CSS -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
 
@@ -20,32 +20,47 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <!-- Chart.js DataLabels Plugin -->
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
-
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/hover.css/2.3.1/css/hover-min.css">
+<link rel="stylesheet" href="{{ url_for('worldwide.static', filename='css/layout.css') }}">
   <link rel="stylesheet" href="{{ url_for('worldwide.static', filename='css/worldwide.css') }}">
-
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.ripples/0.5.3/jquery.ripples.min.js"></script>
 </head>
-<body>
+<body class="dark-mode">
   <nav>
-    임시네비
+    <button class="icon-button" onclick="location.href='/domestic';">
+      <i class="fa-solid fa-house"></i>  <!-- 집 아이콘 -->
+      <span class="button-text">국내 페이지 이동</span>
+    </button>
   </nav>
-  
+
   <main>
     <!-- 왼쪽 국가 리스트 -->
     <section class="left-content">
       <!-- 데이터 업데이트날짜 -->
-      <article class="update-day">
+      <article class="update-day" data-tooltip="날짜를 클릭하여 변경하세요">
         <p>최신 업데이트 날짜</p>
         <p>{{records[0][0].date_reported}} 11:00</p>
         <p>
           <strong>확진자</strong>
           <span>| 사망자</span>
         </p>
+        <!-- 날짜 선택 팝업 -->
+        <div id="date-popup" class="hidden">
+          <input type="date" id="date-picker" min="2020-01-04" max="2024-11-16" value="2022-07-01">
+          <button id="submit-date">확인</button>
+          <button id="cancel-date">취소</button>
+        </div>
       </article>
       
       <!-- 검색창 부분 -->
       <article class="search-box">
-        <input type="search" name="search" id="search-input" placeholder="국가명을 입력하세요">
-        <i class="fa-solid fa-magnifying-glass search-icon"></i>
+        <form id="search-form">
+          <input type="search" name="search" id="search-input" placeholder="국가명을 입력하세요">
+          <button type="submit" class="search-icon">
+            <i class="fa-solid fa-magnifying-glass"></i>
+          </button>
+        </form>
       </article>
 
       <!-- 나라 리스트 -->
@@ -82,7 +97,7 @@
 <!-- ---------------------------------------------- -->
 
     <!-- 가운데 국가 지도 -->
-    <section class="middle-content">
+    <section class="middle-content hvr-waves">
       <!-- 상단 전세계 일간현황 -->
       <article class="world-wide-daily">
         <h2>전세계 일간 현황</h2>
@@ -92,13 +107,14 @@
             <select id="date-select">
               <option value="yesterday">어제</option>
               <option value="today" selected>오늘</option>
-              <option value="tomorrow">내일(예측)</option>
+              <option value="tomorrow">내일(진짜)</option>
+              <option value="prediction">내일(예측)</option>
             </select>
           </div>
             <div class="daily-covid-box">
               {% for classList in daily_classList %}
                 <div>
-                  <p>{{ classList.label }}</p>  <!-- 항목 이름 (확진자, 완치자, 사망자) -->
+                  <p>{{ classList.label }}</p> 
                   <p class="{{ classList.className }}">  
                     <!-- 애니메이션 SVG 로더 -->
                     <svg version="1.1" id="loader-1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
@@ -162,7 +178,7 @@
 
       <!-- 지도 -->
       <article class="covid-map">
-        <div id="map-container" style="height: 300px;"></div>
+        <div id="map-container"></div>
     </article>
 
       <!-- 그래프 -->
@@ -233,15 +249,39 @@
     <!-- 오른쪽 크롤링 뉴스-->
     <section class="right-content">
       <div class="right-tab-btn">
-        <div>관련 뉴스</div>
-        <div>기능 </div>
+        <div class="news">관련 뉴스</div>
+        <div class="test-btn active">실험소</div>
       </div>
-      <div id="selected-country"></div>
-      <div id="search-results"></div>
+      
+      <div class="crw">
+        <div id="selected-country"></div>
+        <div id="search-results"></div>
+        
+      </div>
+      <div class="test active">
+        <div class="test-mode">
+          <div>
+            <div>모드전환</div>
+            <div class="toggle-button" data-action="toggle-dark-light"></div>
+          </div>
+          <div>
+            <div>마우스 물결효과</div>
+            <div class="toggle-button " data-action="toggle-mouse-action"></div>
+
+          </div>
+
+      </div>
+      </div>
+
     </section>
+
+    
+
   </main>
 
-
+  <video autoplay muted loop id="background-video">
+    <source src="{{url_for('worldwide.static', filename='video/world.mp4')}}" type="video/mp4">
+  </video>
   <script src="https://kit.fontawesome.com/c0680c70ea.js" crossorigin="anonymous"></script>
   <script src="{{ url_for('worldwide.static', filename='js/worldwide.js') }}"></script>
   <script src="{{ url_for('worldwide.static', filename='js/crw.js') }}"></script>

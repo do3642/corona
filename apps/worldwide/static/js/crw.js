@@ -3,6 +3,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const selectedCountryDiv = document.getElementById("selected-country");
     const searchResultsDiv = document.getElementById("search-results");
 
+    // 초기값 설정
+    const initialCountry = "South Korea"; // 초기값으로 한국 설정
+
+    // 페이지 로드 시 초기값 데이터 요청
+    selectedCountryDiv.textContent = `선택된 국가: ${initialCountry}`;
+    searchCountryData(initialCountry);
+
     // 국가 리스트 클릭 이벤트
     countryList.addEventListener("click", (event) => {
         const li = event.target.closest('li');
@@ -70,19 +77,14 @@ document.addEventListener('DOMContentLoaded', () => {
         data.result.forEach((item) => {
             const articleCard = document.createElement('div');
             articleCard.classList.add('article-card');
-            articleCard.style.border = '1px solid #ddd';
-            articleCard.style.padding = '16px';
-            articleCard.style.marginBottom = '16px';
-            articleCard.style.borderRadius = '8px';
-            articleCard.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.1)';
-            
+
             // 카드 내용
             articleCard.innerHTML = `
                 <h3 style="font-size: 18px; font-weight: bold;"><a href="${item.url}" target="_blank" style="color: #333;">${item.title}</a></h3>
                 <p style="font-size: 14px; color: #777;">${item.metadata}</p>
                 <a href="${item.url}" target="_blank" style="font-size: 14px; color: #007bff;">자세히 보기</a>
             `;
-
+        
             searchResultsDiv.appendChild(articleCard);
         });
     }
