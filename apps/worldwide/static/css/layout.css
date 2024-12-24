@@ -1,0 +1,49 @@
+
+.crw{
+    width: 100%;
+}
+
+/* 카드 컨테이너 */
+.card-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    justify-content: space-between;
+}
+
+/* .article-card 스타일 수정 */
+.article-card {
+    border: 1px solid #ddd;
+    padding: 16px;
+    margin-bottom: 16px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    box-sizing: border-box;
+    min-height: 150px;  /* 최소 높이를 지정 */
+    display: flex;
+    flex-direction: column;  /* 내부 콘텐츠가 세로로 배치되도록 설정 */
+    width: 400px;
+}
+
+.article-card h3 {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 8px;
+    flex-shrink: 0;  /* 제목이 줄어들지 않도록 설정 */
+}
+
+.article-card p {
+    font-size: 14px;
+    color: #777;
+    margin-bottom: 8px;
+    flex-grow: 1;  /* 본문 내용이 많을 경우 공간을 차지하도록 설정 */
+    overflow: hidden;  /* 내용이 넘칠 경우 숨기기 */
+    text-overflow: ellipsis;  /* 넘친 텍스트는 '...'로 표시 */
+}
+
+.article-card a {
+    font-size: 14px;
+    color: #007bff;
+    text-decoration: none;
+    margin-top: auto;  /* 링크를 카드 하단에 배치 */
+}

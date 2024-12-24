@@ -23,6 +23,9 @@
 <!-- Chart.js DataLabels Plugin -->
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/hover.css/2.3.1/css/hover-min.css">
+
+
+
 <!-- chartjs-plugin-3d -->
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-3d"></script>
 
@@ -31,8 +34,9 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.ripples/0.5.3/jquery.ripples.min.js"></script>
 
-
 <link rel="stylesheet" href="{{ url_for('worldwide.static', filename='css/worldwide.css') }}">
+<link rel="stylesheet" href="{{ url_for('worldwide.static', filename='css/layout.css') }}">
+
 
 
 </head>
@@ -264,7 +268,9 @@
       </div>
       
       <div class="crw">
-        크롤링 영역입니다.
+        <div id="selected-country"></div>
+        <div id="search-results"></div>
+        
       </div>
       <div class="test active">
         <div class="test-mode">
@@ -283,6 +289,7 @@
 
       </div>
       </div>
+
     </section>
 
     
@@ -294,5 +301,6 @@
   </video>
   <script src="https://kit.fontawesome.com/c0680c70ea.js" crossorigin="anonymous"></script>
   <script src="{{ url_for('worldwide.static', filename='js/worldwide.js') }}"></script>
+  <script src="{{ url_for('worldwide.static', filename='js/crw.js') }}"></script>
 </body>
 </html>

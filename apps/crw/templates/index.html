@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>News Search by Country</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-top: 20px;
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 20px;
+        }
+        li {
+            margin: 10px;
+            padding: 10px 20px;
+            background: #007BFF;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        li:hover {
+            background: #0056b3;
+        }
+        #news-results {
+            margin: 20px;
+            padding: 10px;
+            background: white;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        #news-results div {
+            margin-bottom: 10px;
+        }
+        #news-results a {
+            color: #007BFF;
+            text-decoration: none;
+        }
+        #news-results a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <h1>Select a Country</h1>
+    <ul id="country-list">
+        {% for country in countries %}
+        <li onclick="searchNews('{{ country }}')">{{ country }}</li>
+        {% endfor %}
+    </ul>
+    <div id="news-results"></div>
+
+    <script>
+        function searchNews(country) {
+            fetch(`/search-news?country=${country}`)
+                .then(response => response.json())
+                .then(data => {
+                    const resultsDiv = document.getElementById('news-results');
+                    resultsDiv.innerHTML = ''; // 기존 결과 삭제
+                    data.forEach(news => {
+                        resultsDiv.innerHTML += `<div>
+                            <a href="${news.url}" target="_blank">${news.title}</a>
+                        </div>`;
+                    });
+                });
+        }
+    </script>
+</body>
+</html>
