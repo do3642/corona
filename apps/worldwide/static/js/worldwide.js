@@ -70,8 +70,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // 서버에서 COVID-19 전세계 일일 데이터를 가져오는 함수
 async function fetchCovidData(dateType,date) {
+  
   try {
-    const response = await fetch(`/worldwide/covid-data/${dateType}?date=${date}`);
+    const formattedDate = (!date) ? '' : date;
+    const response = await fetch(`/worldwide/covid-data/${dateType}?date=${formattedDate}`);
 
     if (!response.ok) {
       throw new Error(`Error fetching data: ${response.statusText}`);
@@ -543,9 +545,11 @@ document.addEventListener('DOMContentLoaded', () => {
           // console.log("서버로부터 받은 데이터:", data);
           updateDOM(data); // 받은 데이터를 DOM에 반영
 
+          // 셀렉트 박스 값
           dateSelect = document.querySelector('#date-select').value;
+          // 일일 전세계 데이터 갱신
           fetchCovidData(dateSelect,selectedDate)
-          //차트 갱신
+          // 차트 갱신
           changeGraphType('pie')
 
           
