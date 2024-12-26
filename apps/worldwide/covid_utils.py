@@ -203,13 +203,12 @@ def get_covid_map_and_data(selected_date=None):
     return records, country_percentages, marker_data
 
 
-def get_date_range(period):
+def get_date_range(period, current_date):
     """
     기간(period)에 따라 시작일을 계산
     :param period: 'daily', 'weekly', 'monthly'
     :return: 시작일과 종료일 (start_date, end_date)
     """
-    current_date = datetime.datetime.now().date() - datetime.timedelta(days=365 * 2 + 180)
     if period == 'daily':
         return current_date, current_date
     elif period == 'weekly':
@@ -221,14 +220,20 @@ def get_date_range(period):
     else:
         raise ValueError("Invalid period specified. Use 'daily', 'weekly', or 'monthly'.")
 
-def fetch_data_by_period(country, period):
+def fetch_data_by_period(country, period, date_str=None):
     """
     특정 기간(period)의 데이터를 조회
     :param country: 국가 이름
     :param period: 'daily', 'weekly', 'monthly'
     :return: 해당 기간의 데이터 딕셔너리
     """
-    start_date, end_date = get_date_range(period)
+        # 날짜 기본값 처리
+    if date_str:
+        base_date = datetime.datetime.strptime(date_str, '%Y-%m-%d').date()
+    else:
+        base_date = datetime.datetime.now().date() - datetime.timedelta(days=365 * 2 + 180)
+
+    start_date, end_date = get_date_range(period, base_date)
     
     # 기간별 데이터 조회
     query = db.session.query(
