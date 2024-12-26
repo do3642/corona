@@ -408,12 +408,13 @@ function initializeGraph() {
     // 국가 선택 이벤트
     countryListItems.forEach(item => {
         item.addEventListener('click', (e) => {
-            const country = e.target.closest('li').dataset.country;
+            // const country = e.target.closest('li').dataset.country;
             const clickedItem = e.target.closest('li');
 
             countryListItems.forEach(el => el.classList.remove('active'));
             clickedItem.classList.add('active');
 
+            // fetchDataAndRender(country)
             changeGraphType('pie');
         });
     });
@@ -535,8 +536,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
           
           //차트 갱신
-          const defaultCountry = 'Republic of Korea';
-          fetchDataAndRender(defaultCountry,selectedDate);
+          changeGraphType('pie')
 
           
       })

@@ -63,7 +63,6 @@ def get_covid_data(date_type):
 def get_daily_data():
     country = request.args.get('country')  # URL 쿼리 파라미터에서 'country' 값을 가져옴
     date_str = request.args.get('date')
-    print('그래프 생성 요청 들어옴', date_str)
     if not country:
         return jsonify({"error": "Country parameter is required"}), 400
 
