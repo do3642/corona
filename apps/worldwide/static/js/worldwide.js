@@ -1,3 +1,20 @@
+// ----------------업데이트 날짜의 날짜 받아오기
+function getDateOnly() {
+  let dateOnly = null;
+  const element = document.querySelector('article.update-day > p:nth-child(2)');
+
+  if (element) {
+    const fullText = element.textContent.trim(); // 공백 제거
+    dateOnly = fullText.split(' ')[0];   // 공백으로 나누고 첫 번째 부분 가져오기
+  } else {
+    console.error('Element not found!');
+    dateOnly = new Date().toISOString().split('T')[0]; // 현재 날짜를 YYYY-MM-DD 형식으로 반환
+  }
+
+  return dateOnly;
+}
+
+
 // ----------------유틸리티 함수 (국가리스트 선택자)
 function getCountryListItems() {
   return document.querySelectorAll('.country-list li'); // 국가 리스트 항목 가져오기
@@ -44,16 +61,17 @@ document.addEventListener('DOMContentLoaded', () => {
       element.innerHTML = getLoadingSVG(); 
     });
     // 데이터 로드
-    await fetchCovidData(selectedDateType);
+
+    await fetchCovidData(selectedDateType,getDateOnly());
   });
   // 초기 데이터 로드 (오늘 상태로)
   fetchCovidData(selectedDateType);
 });
 
 // 서버에서 COVID-19 전세계 일일 데이터를 가져오는 함수
-async function fetchCovidData(dateType) {
+async function fetchCovidData(dateType,date) {
   try {
-    const response = await fetch(`/worldwide/covid-data/${dateType}`);
+    const response = await fetch(`/worldwide/covid-data/${dateType}?date=${date}`);
 
     if (!response.ok) {
       throw new Error(`Error fetching data: ${response.statusText}`);
@@ -434,16 +452,7 @@ function initializeGraph() {
 // 그래프 타입 변경 함수
 function changeGraphType(type) {
     chartType = type;
-    let dateOnly = null;
-    const element = document.querySelector('article.update-day > p:nth-child(2)');
-
-    if (element) {
-      const fullText = element.textContent.trim(); // 공백 제거
-      dateOnly = fullText.split(' ')[0];   // 공백으로 나누고 첫 번째 부분 가져오기
-    } else {
-        console.error('Element not found!');
-        dateOnly = new Date()
-    }
+    let dateOnly = getDateOnly();
 
     const selectedCountry = document.querySelector('.country-list .active').dataset.country;
     
@@ -534,7 +543,8 @@ document.addEventListener('DOMContentLoaded', () => {
           // console.log("서버로부터 받은 데이터:", data);
           updateDOM(data); // 받은 데이터를 DOM에 반영
 
-          
+          dateSelect = document.querySelector('#date-select').value;
+          fetchCovidData(dateSelect,selectedDate)
           //차트 갱신
           changeGraphType('pie')
 

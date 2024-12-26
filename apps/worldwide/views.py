@@ -50,8 +50,10 @@ def api_marker_data():
 # 전세계 데이터 계산 후 리턴
 @worldwide_bp.route('/covid-data/<date_type>', methods=['GET'])
 def get_covid_data(date_type):
+    date = request.args.get('date')
+    
     try:
-        data = get_covid_data_for_date(date_type)
+        data = get_covid_data_for_date(date_type,date)
         return jsonify(data)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
