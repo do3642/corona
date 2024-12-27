@@ -196,7 +196,8 @@ def get_covid_map_and_data(selected_date=None):
             'lat': lat,
             'lng': lng,
             'country': country,
-            'country_korean' : country_korean
+            'country_korean' : country_korean,
+            'infectionRate' : record[0].new_cases
         })
 
 
