@@ -51,7 +51,6 @@ def api_marker_data():
 @worldwide_bp.route('/covid-data/<date_type>', methods=['GET'])
 def get_covid_data(date_type):
     date = request.args.get('date')
-    print('@@@@@@@@@@@@@@@@@@',date)
     try:
         data = get_covid_data_for_date(date_type,date)
         return jsonify(data)

@@ -92,10 +92,8 @@ from datetime import timedelta
 # 날짜에 따른 COVID-19 데이터 반환 함수
 def get_covid_data_for_date(date_type,date):
     # 기본 날짜를 2년 6개월 전으로 세팅
-    print('함수쪽@@@@@@@@@@@@@@@@@@',date)
     if not date:
         base_date = datetime.datetime.now().date() - timedelta(days=365 * 2 + 180)
-        print('날짜는:',base_date)
     else:
         base_date =  datetime.datetime.strptime(date, '%Y-%m-%d').date()
 

@@ -598,7 +598,7 @@ function updateDOM(data) {
       const countryPercentage = data.country_percentages.find(
           p => p.country === record.country
       );
-
+      
       // 각 국가 항목 (li)에서 필요한 부분만 갱신
       const listItem = countryList.children[index];
 

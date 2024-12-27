@@ -55,7 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 검색 결과 화면에 출력
     function displaySearchResults(data) {
-        console.log(data); // 크롤링한 데이터 확인
+        // console.log(data); // 크롤링한 데이터 확인
 
         // 기존 결과 초기화
         searchResultsDiv.innerHTML = "";
