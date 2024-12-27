@@ -38,6 +38,55 @@ def worldwide_data():
         total_classList = total_classList
     )
 
+
+
+@worldwide_bp.route('/request/marker-data')
+def api_marker_data():
+    _, _,  marker_data = get_covid_map_and_data()  # marker_data만 반환
+    return jsonify(marker_data)
+
+
+
+# 전세계 데이터 계산 후 리턴
+@worldwide_bp.route('/covid-data/<date_type>', methods=['GET'])
+def get_covid_data(date_type):
+    date = request.args.get('date')
+    try:
+        data = get_covid_data_for_date(date_type,date)
+        return jsonify(data)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# 그래프 요청 라우터
+
+
+@worldwide_bp.route('/get-daily-data', methods=['GET'])
+def get_daily_data():
+    country = request.args.get('country')  # URL 쿼리 파라미터에서 'country' 값을 가져옴
+    date_str = request.args.get('date')
+    if not country:
+        return jsonify({"error": "Country parameter is required"}), 400
+
+
+    try:
+        # 일간, 주간, 월간 데이터 조회
+        daily_data = fetch_data_by_period(country, 'daily', date_str)
+        weekly_data = fetch_data_by_period(country, 'weekly', date_str)
+        monthly_data = fetch_data_by_period(country, 'monthly', date_str)
+
+        # 모든 데이터를 합쳐서 반환
+        response_data = {
+            "daily": daily_data,
+            "weekly": weekly_data,
+            "monthly": monthly_data
+        }
+
+        return jsonify(response_data), 200
+
+    except Exception as e:
+        print(f"Error fetching data: {e}")
+        return jsonify({"error": "An error occurred while fetching data"}), 500
+
 @worldwide_bp.route('/data', methods=['GET'])
 def worldwide_data_json():
     selected_date = request.args.get('date', datetime.datetime.now().date() - datetime.timedelta(days=365 * 2 + 180))
@@ -63,52 +112,6 @@ def worldwide_data_json():
         'country_percentages': country_percentages,
         'date_reported': records[0][0].date_reported.strftime('%Y-%m-%d') if records else None
     })
-
-
-@worldwide_bp.route('/request/marker-data')
-def api_marker_data():
-    _, _,  marker_data = get_covid_map_and_data()  # marker_data만 반환
-    return jsonify(marker_data)
-
-
-
-# 전세계 데이터 계산 후 리턴
-@worldwide_bp.route('/covid-data/<date_type>', methods=['GET'])
-def get_covid_data(date_type):
-    try:
-        data = get_covid_data_for_date(date_type)
-        return jsonify(data)
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-# 그래프 요청 라우터
-
-
-@worldwide_bp.route('/get-daily-data', methods=['GET'])
-def get_daily_data():
-    country = request.args.get('country')  # URL 쿼리 파라미터에서 'country' 값을 가져옴
-    if not country:
-        return jsonify({"error": "Country parameter is required"}), 400
-
-    try:
-        # 일간, 주간, 월간 데이터 조회
-        daily_data = fetch_data_by_period(country, 'daily')
-        weekly_data = fetch_data_by_period(country, 'weekly')
-        monthly_data = fetch_data_by_period(country, 'monthly')
-
-        # 모든 데이터를 합쳐서 반환
-        response_data = {
-            "daily": daily_data,
-            "weekly": weekly_data,
-            "monthly": monthly_data
-        }
-
-        return jsonify(response_data), 200
-
-    except Exception as e:
-        print(f"Error fetching data: {e}")
-        return jsonify({"error": "An error occurred while fetching data"}), 500
-
 
 
 
