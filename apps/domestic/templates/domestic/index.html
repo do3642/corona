@@ -15,7 +15,6 @@
       <li><a href="#area-table">시군구별<br>상황</a></li>
       <li><a href="#hospital-table">의료기관</a></li>
       <li><a href="#domestic_covid_news">최신뉴스</a></li>
-      <a href="#" class="go-to-top"><i class="fa-solid fa-arrow-up"></i></a>
     </ul>
   </div>
   {% else %}
@@ -25,7 +24,6 @@
       <li><a href="#graph2">완치자<br>정보</a></li>
       <li><a href="#graph3">연령별<br>상황</a></li>
       <li><a href="#domestic_covid_news">최신 뉴스</a></li>
-      <a href="#" class="go-to-top"><i class="fa-solid fa-arrow-up"></i></a>
     </ul>
   </div>
   {% endif %}
@@ -39,9 +37,9 @@
 
   {% if area %}
   <article id="graph4">
-    <canvas id="chart-time" width="850px" height="500px"></canvas>
+    <canvas id="chart-time" width="850px" height="700px"></canvas>
     <div>
-      <button data-graph="time_incidence">전체 확진자</button>
+      <button data-graph="time_incidence" class="active">전체 확진자</button>
       <button data-graph="time_death">전체 사망자</button>
       <button data-graph="time_incidence_month">월별 평균 확진자</button>
       <button data-graph="time_death_month">월별 평균 사망자</button>
@@ -148,23 +146,23 @@
 
   {% else %}
   <article id="graph1">
-    <canvas id="chart-area" width="850px" height="500px"></canvas>
+    <canvas id="chart-area" width="850px" height="700px"></canvas>
     <div>
-      <button data-graph="area_incidence">발병률</button>
+      <button data-graph="area_incidence" class="active">발병률</button>
       <button data-graph="area_death">사망률</button>
     </div>
   </article>
 
   <article id="graph2">
     <div class="recoveryRateChart">
-      <canvas id="recoveryRateChart" width="800" height="500"></canvas>
+      <canvas id="recoveryRateChart" width="800" height="700"></canvas>
     </div>
   </article>
 
   <article id="graph3">
-    <canvas id="chart-age" width="850px" height="500px"></canvas>
+    <canvas id="chart-age" width="850px" height="700px"></canvas>
     <div>
-      <button data-graph="age_incidence">발병률</button>
+      <button data-graph="age_incidence" class="active">발병률</button>
       <button data-graph="case_death_rate">확진자 중 사망률</button>
     </div>
   </article>
@@ -196,6 +194,10 @@
     </div>
   </nav>
   {% endif %}
+
+  <nav>
+    <a href="#" class="go-to-top"><i class="fa-solid fa-arrow-up"></i></a>
+  </nav>
 
   <script>
     const area = "{{ area | default('', true) }}"

@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const observerOptions = {
     root: null, // 뷰포트 기준
     rootMargin: '0px',
-    threshold: 0.9 // 섹션이 60% 이상 보일 때 활성화
+    threshold: 0.9 // 섹션이 90% 이상 보일 때 활성화
   };
 
   const observer = new IntersectionObserver((entries) => {
