@@ -1,3 +1,20 @@
+// ----------------업데이트 날짜의 날짜 받아오기
+function getDateOnly() {
+  let dateOnly = null;
+  const element = document.querySelector('article.update-day > p:nth-child(2)');
+
+  if (element) {
+    const fullText = element.textContent.trim(); // 공백 제거
+    dateOnly = fullText.split(' ')[0];   // 공백으로 나누고 첫 번째 부분 가져오기
+  } else {
+    console.error('Element not found!');
+    dateOnly = new Date().toISOString().split('T')[0]; // 현재 날짜를 YYYY-MM-DD 형식으로 반환
+  }
+
+  return dateOnly;
+}
+
+
 // ----------------유틸리티 함수 (국가리스트 선택자)
 function getCountryListItems() {
   return document.querySelectorAll('.country-list li'); // 국가 리스트 항목 가져오기
@@ -31,34 +48,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 기본값 설정
   let selectedDateType = 'today';
+
   const dateSelect = document.querySelector('#date-select');
-    // 데이터가 들어갈 위치 선택 (로딩중을 표시하려고)
   const elementsToLoad = document.querySelectorAll('[data-loading-target]');
 
 
   dateSelect.addEventListener('change', async (event) => {
     selectedDateType = event.target.value;
   
-    // 로딩 클래스 추가 및 svg 삽입
+    // svg 삽입
     elementsToLoad.forEach(element  => {
       element.innerHTML = getLoadingSVG(); 
-      element.classList.add('loading'); 
     });
     // 데이터 로드
-    await fetchCovidData(selectedDateType);
-    // 로딩 클래스 제거 및 데이터 갱신
-    elementsToLoad.forEach(element => {
-      element.classList.remove('loading'); 
-    });
+
+    await fetchCovidData(selectedDateType,getDateOnly());
   });
   // 초기 데이터 로드 (오늘 상태로)
   fetchCovidData(selectedDateType);
 });
 
 // 서버에서 COVID-19 전세계 일일 데이터를 가져오는 함수
-async function fetchCovidData(dateType) {
+async function fetchCovidData(dateType,date) {
+  
   try {
-    const response = await fetch(`/worldwide/covid-data/${dateType}`);
+    const formattedDate = (!date) ? '' : date;
+    const response = await fetch(`/worldwide/covid-data/${dateType}?date=${formattedDate}`);
 
     if (!response.ok) {
       throw new Error(`Error fetching data: ${response.statusText}`);
@@ -260,7 +275,7 @@ document.addEventListener('DOMContentLoaded', function () {
               countryProps.name_pt,
             ].filter(Boolean); // null/undefined 속성 제거
            
-            const normalizedCountryName = countryName.toLowerCase().replace(/\(.*\)/, '').trim();
+            const normalizedCountryName = countryName.toLowerCase().replace(/\(.*\)/, '');
             const isClickedCountry = possibleNames.some(ctyname =>
               ctyname.toLowerCase().replace(/\(.*\)/, '').trim() === normalizedCountryName,
             );
@@ -297,169 +312,157 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
 
-const graph = () => {
-  const countryListItems = getCountryListItems();
-  const graphViews = document.querySelectorAll('.graph-view');
-  let pieCharts = []; // 각 기간에 대해 별도 그래프 저장
-  let chartType = 'pie'; // 초기 그래프 타입 설정 (원형 그래프)
+// 전역 변수
+let chartType = 'pie'; // 초기 그래프 타입
+let pieCharts = []; // 생성된 그래프를 저장하는 배열
 
-  // 그래프 생성 함수
-  const createCharts = (country, data) => {
+// 그래프 생성 함수
+function createCharts(data) {
     // 그래프 초기화
     pieCharts.forEach(chart => chart.destroy());
     pieCharts = [];
 
-    // 그래프 데이터를 렌더링
+    const graphViews = document.querySelectorAll('.graph-view');
     const periods = ['daily', 'weekly', 'monthly'];
+
     periods.forEach((period, index) => {
-      const graphView = graphViews[index];
-      const { new_cases, new_recoveries, new_deaths } = data[period];
-      
+        const graphView = graphViews[index];
+        const { new_cases, new_recoveries, new_deaths } = data[period];
 
-      // 데이터 렌더링
-      const sanitizedData = [new_cases, new_recoveries, new_deaths].map(value => {
-        // 값이 숫자 타입으로 강제 변환되도록 함
-        value = Number(value);
-        return value === 0 ? 0.1 : value;
-      });
-      const total = sanitizedData.reduce((sum, val) => sum + val, 0);
-      graphView.querySelector('.graph-left').innerHTML = `
-        <h4>${period === 'daily' ? '일간' : period === 'weekly' ? '주간' : '월간'}</h4>
-        <div class="graph-details">
-        <p>확진자</p>
-        <p>${parseInt(new_cases, 10).toLocaleString()}명</p>
-        <p>완치자</p>
-        <p>${parseInt(new_recoveries, 10).toLocaleString()}명</p>
-        <p>사망자</p>
-        <p>${parseInt(new_deaths, 10).toLocaleString()}명</p>
-        </div>
-      `;
+        // 데이터 변환
+        const sanitizedData = [new_cases, new_recoveries, new_deaths].map(value => {
+            value = Number(value);
+            return value === 0 ? 0.1 : value; // 0 대신 0.1로 표시
+        });
 
-      // 그래프 생성
-      const ctx = graphView.querySelector('canvas').getContext('2d');
-      const chartLabels = chartType === 'pie' ? [] : ['확진자', '완치자', '사망자'];
-      const chartCanvas = graphView.querySelector('canvas');
-        if (chartType === 'pie') {
-          chartCanvas.width = 250; // 실제 크기
-          chartCanvas.height = 150;
-          chartCanvas.style.width = '250px'; // 시각적 크기
-          chartCanvas.style.height = '150px';
-        } else {
-          chartCanvas.width = 250;
-          chartCanvas.height = 250;
-          chartCanvas.style.width = '250px';
-          chartCanvas.style.height = '250px';
-        }
+        const total = sanitizedData.reduce((sum, val) => sum + val, 0);
+        graphView.querySelector('.graph-left').innerHTML = `
+            <h4>${period === 'daily' ? '일간' : period === 'weekly' ? '주간' : '월간'}</h4>
+            <div class="graph-details">
+                <p>확진자</p>
+                <p>${parseInt(sanitizedData[0], 10).toLocaleString()}명</p>
+                <p>완치자</p>
+                <p>${parseInt(sanitizedData[1], 10).toLocaleString()}명</p>
+                <p>사망자</p>
+                <p>${parseInt(sanitizedData[2], 10).toLocaleString()}명</p>
+            </div>
+        `;
 
-      const chart = new Chart(ctx, {
-        type: chartType, // 동적으로 그래프 타입 설정
-        data: {
-          labels: chartLabels,
-          datasets: [
-            {
-              label: `${period} COVID-19 Data`,
-              data: sanitizedData,
-              backgroundColor: ['#ef476f', '#118ab2', '#073b4c'], // 각 구역에 색상 적용
-              borderColor: ['#F3722C', '#43AA8B', '#4D908E'],
-              borderWidth: 2,
-            }
-          ]
-        },
-        options: {
-          responsive: true,
-          // aspectRatio: chartType === 'pie' ? 1 : 2, // 파이 그래프는 1:1 비율, 나머지 그래프는 2:1 비율로 설정
-          plugins: {
-            legend: {
-              position: 'top',
+        // 차트 생성
+        const ctx = graphView.querySelector('canvas').getContext('2d');
+        const chartLabels = chartType === 'pie' ? [] : ['확진자', '완치자', '사망자'];
+        const chartCanvas = graphView.querySelector('canvas');
+        chartCanvas.width = chartType === 'pie' ? 250 : 250;
+        chartCanvas.height = chartType === 'pie' ? 150 : 250;
+        chartCanvas.style.width = `${chartCanvas.width}px`;
+        chartCanvas.style.height = `${chartCanvas.height}px`;
+
+        const chart = new Chart(ctx, {
+            type: chartType,
+            data: {
+                labels: chartLabels,
+                datasets: [
+                    {
+                        label: `${period} COVID-19 Data`,
+                        data: sanitizedData,
+                        backgroundColor: ['#ef476f', '#118ab2', '#073b4c'],
+                        borderColor: ['#F3722C', '#43AA8B', '#4D908E'],
+                        borderWidth: 2,
+                    },
+                ],
             },
-            tooltip: {
-              callbacks: {
-                label: function (tooltipItem) {
-                  const originalValue = tooltipItem.raw; // 실제 값
-                  return tooltipItem.label + ': ' + (originalValue === 0.1 ? 0 : originalValue.toLocaleString());
-                }
-              }
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'top' },
+                    tooltip: {
+                        callbacks: {
+                            label: function (tooltipItem) {
+                                const originalValue = tooltipItem.raw;
+                                return tooltipItem.label + ': ' + (originalValue === 0.1 ? 0 : originalValue.toLocaleString());
+                            },
+                        },
+                    },
+                    datalabels: {
+                        formatter: (value, context) => {
+                            const percentage = ((value / total) * 100).toFixed(1);
+                            return `${percentage}%`;
+                        },
+                        color: '#fff',
+                        font: { weight: 'bold', size: 14 },
+                        padding: 5,
+                    },
+                },
+                layout: { padding: 10 },
             },
-            // datalabels 플러그인 적용
-            datalabels: {
-              formatter: (value, context) => {
-                const percentage = ((value / total) * 100).toFixed(1); // 비율 계산
-                return `${percentage}%`; // 데이터 값과 비율 표시
-              },
-              color: (context) => {
-                return '#fff';
-              },
-              font: {
-                weight: 'bold',
-                size: 14,
-              },
-              padding: 5,
-            }
-          },
-          layout: {
-            padding: 10
-          }
-        },
-        plugins: [ChartDataLabels] // datalabels 플러그인 사용 명시
-      });
+            plugins: [ChartDataLabels],
+        });
 
-      pieCharts.push(chart); // 그래프 저장
+        pieCharts.push(chart);
     });
-  };
+}
 
-  // 국가 데이터 가져오기
-  const fetchDataAndRender = (country) => {
-    fetch(`/worldwide/get-daily-data?country=${country}`)
-      .then(response => response.json())
-      .then(data => {
-        createCharts(country, data); // 그래프와 데이터 렌더링
-      })
-      .catch(error => {
-        console.error('Error fetching data:', error);
-      });
-  };
+// 데이터 요청 및 렌더링 함수
+function fetchDataAndRender(country, date = null) {
+    // 날짜가 있으면 쿼리 문자열에 추가
+    const url = date 
+        ? `/worldwide/get-daily-data?country=${country}&date=${date}` 
+        : `/worldwide/get-daily-data?country=${country}`;
+    
+    fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            createCharts(data);
+        })
+        .catch(error => {
+            console.error('Error fetching data:', error);
+        });
+}
 
-  // 국가 목록 클릭 이벤트
-  countryListItems.forEach(item => {
-    item.addEventListener('click', (e) => {
-      const country = e.target.closest('li').getAttribute('data-country');
-      const clickedItem  = e.target.closest('li');
+// 초기화 함수
+function initializeGraph() {
+    const countryListItems = getCountryListItems();
+    const defaultCountry = 'Republic of Korea';
+    const defaultItem = Array.from(countryListItems).find(item => item.getAttribute('data-country') === defaultCountry);
 
-      countryListItems.forEach(el => el.classList.remove('active'));
-      clickedItem.classList.add('active');
-      // 선택된 상태 표시
-      countryListItems.forEach(el => el.classList.remove('selected'));
-      e.target.closest('li').classList.add('selected');
+    // 국가 선택 이벤트
+    countryListItems.forEach(item => {
+        item.addEventListener('click', (e) => {
+            // const country = e.target.closest('li').dataset.country;
+            const clickedItem = e.target.closest('li');
 
-      // 데이터 가져와 렌더링
-      fetchDataAndRender(country);
+            countryListItems.forEach(el => el.classList.remove('active'));
+            clickedItem.classList.add('active');
+
+            // fetchDataAndRender(country)
+            changeGraphType('pie');
+        });
     });
-  });
 
-  // 그래프 타입 변경 함수
-  const changeGraphType = (type) => {
+    // 초기 그래프 렌더링
+    if (defaultItem) {
+        defaultItem.classList.add('active');
+        fetchDataAndRender(defaultCountry);
+    }
+
+    // 그래프 타입 변경 버튼 이벤트
+    document.getElementById('pieGraphBtn').addEventListener('click', () => changeGraphType('pie'));
+    document.getElementById('barGraphBtn').addEventListener('click', () => changeGraphType('bar'));
+    document.getElementById('lineGraphBtn').addEventListener('click', () => changeGraphType('line'));
+}
+
+// 그래프 타입 변경 함수
+function changeGraphType(type) {
     chartType = type;
-    // 그래프 타입 변경 후 다시 그래프 렌더링
-    const selectedCountry = document.querySelector('.country-list .selected').getAttribute('data-country');
-    fetchDataAndRender(selectedCountry);
-  };
+    let dateOnly = getDateOnly();
 
-  // 버튼 클릭 이벤트 리스너
-  document.getElementById('pieGraphBtn').addEventListener('click', () => changeGraphType('pie'));
-  document.getElementById('barGraphBtn').addEventListener('click', () => changeGraphType('bar'));
-  document.getElementById('lineGraphBtn').addEventListener('click', () => changeGraphType('line'));
+    const selectedCountry = document.querySelector('.country-list .active').dataset.country;
+    
+    fetchDataAndRender(selectedCountry,dateOnly);
+}
 
-  // 초기 화면 설정
-  const defaultCountry = 'Republic of Korea';
-  const defaultItem = Array.from(countryListItems).find(item => item.getAttribute('data-country') === defaultCountry);
-  if (defaultItem) {
-    defaultItem.classList.add('selected'); // 선택 상태 표시
-    fetchDataAndRender(defaultCountry); // 초기 데이터 렌더링
-  }
-};
-
-graph();
-
+// 초기화 호출
+initializeGraph();
 
 
 // 보는 화면에 맞게 지도크기 제어
@@ -477,7 +480,7 @@ function adjustMiddleContentHeight() {
 
   
   // 화면 전체 높이에서 헤더,일간현황,그래프의 높이를 뺀 값 계산
-  const availableHeight = window.innerHeight  - dailyData.offsetHeight - graphData.offsetHeight - 25; // 50은 여유 마진값
+  const availableHeight = window.innerHeight  - dailyData.offsetHeight - graphData.offsetHeight - 25; 
   const availableHeightLeft = window.innerHeight - updateBox.offsetHeight - searchBox.offsetHeight - 25;
   mapBox.style.height = `${availableHeight}px`;
   countryList.style.height = `${availableHeightLeft}px`;
@@ -495,7 +498,7 @@ window.addEventListener('resize', adjustMiddleContentHeight);
 
 
 
-
+// 특정날짜에 해당하는 전세계 나라의 감염 데이터
 document.addEventListener('DOMContentLoaded', () => {
   const updateDayElement = document.querySelector('.update-day');
   const datePopup = document.querySelector('#date-popup');
@@ -539,8 +542,16 @@ document.addEventListener('DOMContentLoaded', () => {
           return response.json(); // JSON 응답을 반환받음
       })
       .then(data => {
-          console.log("서버로부터 받은 데이터:", data);
+          // console.log("서버로부터 받은 데이터:", data);
           updateDOM(data); // 받은 데이터를 DOM에 반영
+
+          // 셀렉트 박스 값
+          dateSelect = document.querySelector('#date-select').value;
+          // 일일 전세계 데이터 갱신
+          fetchCovidData(dateSelect,selectedDate)
+          // 차트 갱신
+          changeGraphType('pie')
+
           
       })
       .catch(error => {
@@ -556,16 +567,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 3. #cancel-date 클릭 시 팝업 닫기 및 외부 클릭 처리
   cancelDateButton.addEventListener('click', (event) => {
-      event.stopPropagation(); // 부모 요소로의 이벤트 전파 방지
+      event.stopPropagation(); 
       datePopup.classList.add('hidden');
-      document.removeEventListener('click', handleOutsideClick); // 외부 클릭 이벤트 제거
+      document.removeEventListener('click', handleOutsideClick); 
   });
 
   // 외부 클릭 시 팝업 닫기
   function handleOutsideClick(event) {
       if (!datePopup.contains(event.target) && !updateDayElement.contains(event.target)) {
           datePopup.classList.add('hidden');
-          document.removeEventListener('click', handleOutsideClick); // 외부 클릭 이벤트 제거
+          document.removeEventListener('click', handleOutsideClick); 
       }
   }
 
@@ -587,7 +598,7 @@ function updateDOM(data) {
       const countryPercentage = data.country_percentages.find(
           p => p.country === record.country
       );
-
+      
       // 각 국가 항목 (li)에서 필요한 부분만 갱신
       const listItem = countryList.children[index];
 
@@ -664,8 +675,6 @@ document.addEventListener('DOMContentLoaded', function () {
         } else if (action === 'toggle-cursor-action') {
           toggleCursorEffect();
 
-        } else if (action === 'toggle-btn-action'){
-          
         }
         
         // 각 버튼에 대해서 추가적인 동작을 더 추가할 수 있음
