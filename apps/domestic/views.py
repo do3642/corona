@@ -1,20 +1,13 @@
-<<<<<<< HEAD
-from flask import Blueprint, render_template, request
-=======
-from flask import Blueprint, render_template,jsonify
->>>>>>> 580bdb84b22d1669d140c747e96f191aec923fe8
+from flask import Blueprint, render_template, request, jsonify
 import folium
 import folium.features
 import folium.utilities
 import requests
 from bs4 import BeautifulSoup
 import json
-<<<<<<< HEAD
 import xmltodict
-=======
 import pandas as pd
 import os
->>>>>>> 580bdb84b22d1669d140c747e96f191aec923fe8
 
 from apps.domestic.data import sheet_data
 
@@ -134,25 +127,6 @@ def index():
     
   map_html = map._repr_html_()
 
-<<<<<<< HEAD
-=======
-  # 코로나 관련 기사 크롤링
-  response = requests.get(f'https://search.naver.com/search.naver?sm=tab_hty.top&where=news&ssc=tab.news.all&query=코로나')
-
-  html = response.text
-  soup = BeautifulSoup(html, 'html.parser')
-
-  links = soup.select(".news_tit")
-  articles = []
-
-  for link in links[:5]:
-    title = link.text
-    url = link.attrs['href']
-    articles.append({'title': title, 'url': url})
-
-  
-
->>>>>>> 580bdb84b22d1669d140c747e96f191aec923fe8
   return render_template('domestic/index.html', map_html = map_html , articles = articles)
 
 @bp.route('/api/covid-summary', methods=['GET'])
@@ -183,7 +157,7 @@ def get_covid_summary():
   table_data = df.to_dict(orient="records")  # 데이터를 딕셔너리 리스트로 변환
    # 데이터를 딕셔너리 리스트로 변환
   table_data = df.to_dict(orient="records")
-  print(table_data)
+  
   # 데이터를 JSON 형태로 반환
   return jsonify(table_data)
 
@@ -200,7 +174,6 @@ def region(area):
   if filtered_total.empty:
     return f"{area} 데이터가 없습니다.", 404
   
-<<<<<<< HEAD
   area_info = {area: filtered_total.to_dict(orient='records')}
 
   # 지역 중심 좌표 데이터 가져오기
@@ -341,7 +314,3 @@ def region(area):
     hospital_prev_block=hospital_group_start > 1,
     hospital_next_block=hospital_group_end < hospital_total_pages
     )
-=======
-  return render_template('domestic/area_index.html', area=area, area_info=area_info)
-
->>>>>>> 580bdb84b22d1669d140c747e96f191aec923fe8

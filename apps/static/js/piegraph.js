@@ -1,4 +1,4 @@
-fetch('/domestic/api/covid-summary')
+fetch('/api/covid-summary')
 .then(response => response.json())
 .then(data => {
     // 데이터 처리

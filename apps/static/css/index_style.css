@@ -58,6 +58,13 @@ body {
   color: #333;
 }
 
+.domestic_sidebar_tag a.active {
+  color: rgb(150, 150, 150);
+  font-weight: bold;
+  text-decoration: underline;
+}
+
+
 .domestic_sidebar a:hover {
   opacity: 0.8;
 }
@@ -79,7 +86,7 @@ body {
 }
 
 .domestic_nav a {
-  font-size: 40px;
+  font-size: 35px;
   color: #fff;
   text-decoration: none;
   margin: 0 10px;
@@ -140,18 +147,19 @@ article table {
   width: 100%;
   border-collapse: collapse;
   margin: 20px 0;
+  border-radius: 10px;
 }
 
 article table th, article table td {
   border: 1px solid #ddd;
   padding: 10px;
   text-align: center;
+  font-family: 'GmarketSansMedium';
 }
 
 article table th {
-  background-color: #00aaff;
+  background-color: #6d6d6d;
   color: #fff;
-  font-weight: bold;
 }
 
 article table tr:nth-child(even) {
@@ -171,6 +179,63 @@ article button {
 
 article button:hover {
   background-color: #999999;
+}
+
+article button.active {
+  background-color: #707070;
+  color: white;
+  border: 2px solid #444444;
+}
+
+#hospital-table table tbody a {
+  color:  #4e4e4e;
+  text-decoration: none;
+}
+
+#hospital-table a:hover {
+  opacity: 0.7;
+  text-decoration: underline;
+}
+
+/* 페이지네이션 중앙 정렬 */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  list-style: none;
+  padding: 0;
+  margin: 20px 0;
+}
+
+.pagination .page-item {
+  margin: 0 5px;
+}
+
+.pagination .page-link {
+  display: inline-block;
+  padding: 8px 12px;
+  color: #707070;
+  text-decoration: none;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  background-color: #fff;
+  font-family: 'GmarketSansMedium';
+}
+
+.pagination .page-link:hover {
+  background-color: #f0f0f0;
+}
+
+.pagination .page-item.active .page-link {
+  background-color: #707070;
+  color: #ffffff;
+  border-color: #707070;
+}
+
+.pagination .page-item.disabled .page-link a{
+  color: #ccc;
+  pointer-events: none;
+  background-color: #f9f9f9;
 }
 
 /* 뉴스 섹션 */
@@ -196,7 +261,8 @@ article button:hover {
 #domestic_covid_news a {
   text-decoration: none;
   color: #464646;
-  font-weight: bold;
+  font-family:'GmarketSansMedium';
+  font-size: 18px;
 }
 
 #domestic_covid_news a:hover {
