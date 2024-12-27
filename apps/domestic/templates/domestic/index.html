@@ -38,7 +38,11 @@
   </section>
 
   <article id="graph2">
-    <h1>완치자 데이터 가공 되면 완치율 그래프 들어갈 자리</h1>
+  
+    <h3>지역별 코로나 완치율</h3>
+      <div class="recoveryRateChart">
+    <canvas id="recoveryRateChart" width="800" height="500"></canvas>
+    </div>
   </article>
 
   <article id="graph3">
@@ -66,4 +70,5 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script src="{{ url_for('domestic.static', filename='js/graph.js') }}"></script>
+<script src="{{ url_for('domestic.static', filename='js/piegraph.js') }}"></script>
 {% endblock %}
