@@ -563,6 +563,10 @@ document.addEventListener('DOMContentLoaded', () => {
       // 팝업 닫기
       datePopup.classList.add('hidden');
       document.removeEventListener('click', handleOutsideClick); // 외부 클릭 이벤트 제거
+
+
+
+
   });
 
   // 3. #cancel-date 클릭 시 팝업 닫기 및 외부 클릭 처리
@@ -584,7 +588,32 @@ document.addEventListener('DOMContentLoaded', () => {
   datePopup.addEventListener('click', (event) => {
       event.stopPropagation(); // 클릭 이벤트 전파 방지
   });
+
+  const today = new Date();
+  // 2년 6개월 전 계산하기
+  today.setMonth(today.getMonth() - 29); // 2년 6개월 = 30개월
+  // 1일 빼기
+  today.setDate(today.getDate() - 25);
+
+  // 년, 월, 일 추출
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, '0'); // 월은 0부터 시작하므로 +1
+  const day = String(today.getDate()).padStart(2, '0');
+
+  // 'YYYY-MM-DD' 형식으로 날짜 만들기
+  const dateString = `${year}-${month}-${day}`;
+
+  // 날짜 입력 필드에 설정
+  document.getElementById('date-picker').value = dateString;
+
+
+
 });
+
+
+
+
+
 function updateDOM(data) {
   // 1. 업데이트 날짜
   document.querySelector('.update-day p:nth-child(2)').textContent = `${data.date_reported} 11:00`;
@@ -609,6 +638,10 @@ function updateDOM(data) {
       listItem.querySelector('.daily-status span').innerHTML = `<strong>${record.new_cases.toLocaleString()}</strong> | ${record.new_deaths.toLocaleString()}`;
       listItem.querySelector('.cumulative-status span').innerHTML = `<strong>${record.cumulative_cases.toLocaleString()}</strong> | ${record.cumulative_deaths.toLocaleString()}`;
   });
+
+
+
+
 }
 
 
