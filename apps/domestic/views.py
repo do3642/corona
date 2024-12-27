@@ -93,7 +93,7 @@ def index():
       layer.on('click', function(e) {
           let area = feature.properties.CTP_KOR_NM;
           if (area) {
-              window.parent.location.href = '/domestic/' + encodeURIComponent(area);
+              window.parent.location.href = '/' + encodeURIComponent(area);
           }
       });
   }

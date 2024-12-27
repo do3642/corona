@@ -1,0 +1,211 @@
+/* 기본 설정 */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  width: 100%;
+  max-width: 1920px; /* 최대 크기 설정 */
+  min-width: 1000px; /* 최소 크기 설정 */
+  margin: 0 auto; /* 가운데 정렬 */
+  font-family: Arial, sans-serif; /* 기본 폰트 설정 */
+  background-color: #f9f9f9; /* 배경색 */
+  color: #333; /* 기본 텍스트 색상 */
+}
+
+/* 사이드바 */
+.domestic_sidebar {
+  text-align: center;
+  width: 120px;
+  margin-left: 40px; /* 왼쪽 여백 */
+  margin-top: 25vh; /* 상단 위치 */
+  background-color: rgba(97, 97, 97, 0.397); /* 배경색 */
+  height: 400px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: fixed; /* 고정 위치 */
+  z-index: 9999;
+  border-radius: 10px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); /* 그림자 효과 */
+}
+
+.domestic_sidebar_tag {
+  font-size: 18px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.domestic_sidebar_tag li {
+  height: 70px;
+  width: 90px;
+  background-color: rgba(231, 231, 231, 0.911);
+  margin-bottom: 10px;
+  border-radius: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.domestic_sidebar a {
+  text-decoration: none;
+  font-family: 'GmarketSansMedium';
+  color: #333;
+}
+
+.domestic_sidebar a:hover {
+  opacity: 0.8;
+}
+
+/* 네비게이션 바 */
+.domestic_nav {
+  position: fixed; /* 화면에 고정 */
+  bottom: 40px; /* 화면 하단에서 20px 위로 */
+  right: 40px; /* 화면 오른쪽에서 20px 왼쪽으로 */
+  z-index: 1000; /* 다른 요소들 위에 표시되도록 설정 */
+  background-color: rgba(51, 51, 51, 0.9); /* 반투명 배경 */
+  padding: 10px;
+  border-radius: 50px; /* 둥근 모서리 */
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2); /* 그림자 효과 */
+}
+
+.domestic_nav_bg {
+  display: flex;
+}
+
+.domestic_nav a {
+  font-size: 40px;
+  color: #fff;
+  text-decoration: none;
+  margin: 0 10px;
+}
+
+.domestic_nav a:hover {
+  text-decoration: underline;
+}
+
+/* 메인 콘텐츠 영역 */
+#covid-domestic-map {
+  width: 90%; /* 가로 너비 조정 */
+  max-width: 1200px; /* 최대 가로 너비 */
+  height: 750px;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); /* 그림자 효과 */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  padding-bottom: 150px;
+}
+
+#covid-domestic-map p {
+  margin: 0; /* 여백 제거 */
+  padding: 10px; /* 적절한 안쪽 여백 추가 */
+  font-size: 14px; /* 글자 크기 설정 */
+  text-align: center;
+  width: 100%; /* p 태그가 지도의 전체 폭을 차지하도록 설정 */
+}
+
+/* 그래프 섹션 */
+article {
+  margin: 30px auto;
+  width: 90%; /* 가로 너비 조정 */
+  max-width: 1200px; /* 최대 가로 너비 */
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+article h2 {
+  font-family: 'GmarketSansMedium';
+  margin: 0;
+}
+
+article canvas {
+  display: block;
+  margin: 0 auto;
+  max-width: 100%;
+  height: auto;
+}
+
+article table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px 0;
+}
+
+article table th, article table td {
+  border: 1px solid #ddd;
+  padding: 10px;
+  text-align: center;
+}
+
+article table th {
+  background-color: #00aaff;
+  color: #fff;
+  font-weight: bold;
+}
+
+article table tr:nth-child(even) {
+  background-color: #f4f4f4;
+}
+
+article button {
+  background-color: rgba(206, 206, 206, 0.911);
+  color: #464545;
+  border: none;
+  padding: 10px 15px;
+  margin-right: 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-family:'GmarketSansMedium';
+}
+
+article button:hover {
+  background-color: #999999;
+}
+
+/* 뉴스 섹션 */
+#domestic_covid_news {
+  margin: 30px auto;
+  width: 90%; /* 가로 너비 조정 */
+  max-width: 1200px; /* 최대 가로 너비 */
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+#domestic_covid_news ul {
+  list-style: none;
+  padding: 0;
+}
+
+#domestic_covid_news li {
+  margin: 10px 0;
+}
+
+#domestic_covid_news a {
+  text-decoration: none;
+  color: #464646;
+  font-weight: bold;
+}
+
+#domestic_covid_news a:hover {
+  text-decoration: underline;
+}
+
+@font-face {
+  font-family: 'GmarketSansMedium';
+  src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansMedium.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
