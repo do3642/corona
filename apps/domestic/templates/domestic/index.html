@@ -81,14 +81,12 @@
             <a class="page-link" href="?page1={{ num }}&page2={{ page2 }}">{{ num }}</a>
         </li>
         {% endfor %}
-        {% if area_next_block %}
         <li class="page-item {% if not area_next_block %}disabled{% endif %}">
           <a class="page-link" href="?page1={{ area_group_end + 1 }}&page2={{ page2 }}"
-            {% if not hospital_next_block %}tabindex="-1" aria-disabled="true"{% endif %}>
+            {% if not area_next_block %}tabindex="-1" aria-disabled="true"{% endif %}>
           다음
           </a>
         </li>
-        {% endif %}
       </ul>
     </nav>
 
