@@ -143,7 +143,9 @@ def get_graph_by_area(graph_id, area):
   elif graph_id == 'time_death':
     data = sheet_data.get('시도별사망(17개시도+검역) ')
     data_date = data.query("일자 != '누적(명)'")
-    
+    data_date['일자'] = pd.to_datetime(data_date['일자']).dt.date
+    print(data_date)
+
     data = {
       "labels": data_date['일자'].astype(str).tolist(),
       "values": data_date[area].tolist(),
@@ -160,7 +162,6 @@ def get_graph_by_area(graph_id, area):
   elif graph_id == 'time_incidence_month':
     data = sheet_data.get('시도별발생(17개시도+검역)')
     data_date = data.query("일자 != '누적(명)'")
-    print(data_date[area].dtype)
 
     time_data = data_date[['일자', area]].replace('-', 0)
 
