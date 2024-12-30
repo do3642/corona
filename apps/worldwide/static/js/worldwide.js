@@ -484,10 +484,6 @@ function adjustMiddleContentHeight() {
   const availableHeightLeft = window.innerHeight - updateBox.offsetHeight - searchBox.offsetHeight - 25;
   mapBox.style.height = `${availableHeight}px`;
   countryList.style.height = `${availableHeightLeft}px`;
-
-
-
-
 }
 
 // 페이지 로드와 리사이즈 시 실행
